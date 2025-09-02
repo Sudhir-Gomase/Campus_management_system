@@ -1,0 +1,44 @@
+// loginService.js
+const getUser = require("../../../data-layer/repositories/Admin/index.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const logger = require("../../../utils/logger.js");
+
+const loginService = async (email, password) => {
+  try {
+    const user = await getUser(email);
+    if (!user) return "user not found";
+
+    const passwordsMatch = await bcrypt.compare(password, user.password_node);
+    if (!passwordsMatch) {
+      return "password not matched";
+    }
+
+    delete user.password;
+    delete user.password_node;
+    delete user.created_at;
+    delete user.modified_at;
+    delete user.onsite;
+
+    const userPayload = {
+      id: user.user_id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const secretBuffer = Buffer.from(process.env.JWT_SECRET_KEY || "secret-key");
+    const token = jwt.sign(userPayload, secretBuffer, { expiresIn: 86400 }); // 24h
+
+    return {
+      userId: user.user_id,
+      accounts: [],
+      token,
+      expireIN: "24h",
+    };
+  } catch (err) {
+    logger.error(`SERVICE :: USER :: login :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+module.exports = loginService; // ✅ correct CommonJS export
