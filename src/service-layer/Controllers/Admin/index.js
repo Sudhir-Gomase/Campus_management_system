@@ -6,7 +6,7 @@ const axios = require("axios");
 
 const adminLoginController = async (request, reply) => {
   try {
-    console.log("route hit")
+    console.log("route hit done")
     const { email, password } = request.body;
     const data = await loginService(email, password);
 
