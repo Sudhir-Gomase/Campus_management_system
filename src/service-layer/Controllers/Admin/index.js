@@ -1,4 +1,4 @@
-const { loginService } = require("../../Service/Admin/index");
+const { adminloginService } = require("../../Service/Admin/index");
 const { getStatusCode } = require("../../../utils/getStatusCode");
 const logger = require("../../../utils/logger");
 const axios = require("axios");
@@ -8,7 +8,7 @@ const adminLoginController = async (request, reply) => {
   try {
     console.log("route hit done")
     const { email, password } = request.body;
-    const data = await loginService(email, password);
+    const data = await adminloginService(email, password);
     console.log("data",data)
     if (data === "user not found" || data === "password not matched") {
       return reply.code(400).send("Invalid Credentials.");
@@ -22,13 +22,11 @@ const adminLoginController = async (request, reply) => {
     }
 
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
-
-
-   
       return reply.send({
         token: token,
-        userId: data.admin_id,
+        admin_id: data.admin_id,
         expireIn: data.expireIN,
+        role:"Admin",
         message: "Login successful",
       });
     

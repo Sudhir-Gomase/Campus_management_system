@@ -1,7 +1,7 @@
 const knex = require("../../database-connections/campus_db/connection.js");
 const logger = require("../../../../src/utils/logger.js");
 
-const getUser = async (email) => {
+const getUserForAdmin = async (email) => {
   try {
     const user = await knex("admin").where("email", email).first();
     return user || null; // explicitly return null if not found
@@ -14,4 +14,4 @@ const getUser = async (email) => {
   }
 };
 
-module.exports = getUser;
+module.exports = {getUserForAdmin};

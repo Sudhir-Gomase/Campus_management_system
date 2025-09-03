@@ -1,32 +1,28 @@
+
 const fastify = require("fastify");
 const dotenv = require("dotenv");
 const cors = require("@fastify/cors");
-const jwt = require("jsonwebtoken");
 const path = require("path");
 
-// Import your route modules
+// Routes
 const Admin = require("./src/routes/Admin");
 // const Company = require("./src/routes/Company");
-// const Student = require("./src/routes/Student");
+const Student = require("./src/routes/Student");
 
-dotenv.config() ;
+// Load environment variables
+dotenv.config();
 
 const serverPort = process.env.PORT || 4000;
 const server = fastify({ logger: true, bodyLimit: 52428800 });
 
-console.log(">>>>>>>>>>>>>>>> Password", process.env.DB_PASSWORD);
+// Debug: check env
+console.log(">>>>>>>> DB Password:", process.env.DB_PASSWORD);
 
-const allowedOrigins = [];
+// ✅ Register multipart
+server.register(require("@fastify/multipart"));
 
-// Register multipart
-try {
-  server.register(require("@fastify/multipart"));
-} catch (err) {
-  console.error("Failed to register @fastify/multipart:", err);
-  process.exit(1);
-}
-
-// Register CORS
+// ✅ Register CORS
+const allowedOrigins = []; // Add allowed frontend URLs if needed
 server.register(cors, {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -36,11 +32,10 @@ server.register(cors, {
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  preflightContinue: false,
   optionsSuccessStatus: 204,
 });
 
-// Custom JSON parser
+// ✅ JSON body parser with error handling
 server.addContentTypeParser(
   "application/json",
   { parseAs: "string" },
@@ -55,74 +50,44 @@ server.addContentTypeParser(
   }
 );
 
-// JWT plugin
+// ✅ JWT plugin
 server.register(require("@fastify/jwt"), {
-  secret: process.env.JWT_SECRET_KEY,
+  secret: process.env.JWT_SECRET_KEY || "default-secret",
 });
 
-// Auth hook (basic verification)
+// ✅ JWT Auth Hook (protect all except login)
 server.addHook("onRequest", async (request, reply) => {
-  if (request.routerPath === "/adminlogin") {
-    return; // ✅ skip JWT check for login route
+  const publicRoutes = ["/adminlogin", "/studentlogin"];
+  const path = request.routerPath || request.raw.url;
+
+  if (publicRoutes.some(route => path.startsWith(route))) {
+    return; // Skip JWT verification for public routes
   }
+
   try {
     await request.jwtVerify();
   } catch (err) {
-    reply.send(err);
+    return reply.status(401).send({ error: "Invalid or missing token" });
   }
 });
 
-// Auth hook (with public route handling)
-server.addHook("onRequest", async (request, reply) => {
-  const publicPrefixes = ["/adminlogin"];
-  const requestPath = request.routerPath || request.raw.url;
-  const isPublicRoute = publicPrefixes.some((prefix) =>
-    requestPath?.startsWith(prefix)
-  );
-
-  if (isPublicRoute) {
-    return; // Skip auth for public routes
-  }
-
-  try {
-    const authHeader = request.headers.authorization;
-    const token = authHeader?.split(" ")[1];
-    if (!token) {
-      return reply.status(401).send({ error: "Token not provided" });
-    }
-    const decodedToken = jwt.verify(
-      token,
-      process.env.JWT_SECRET_KEY || "secret-key"
-    );
-    request.user = decodedToken;
-  } catch (err) {
-    console.error("JWT verification failed:", err);
-    return reply.status(401).send({ error: "Invalid or expired token" });
-  }
-});
-
-// Register routes
+// ✅ Register routes
 server.register(Admin);
-// server.register(Student);
+server.register(Student);
 // server.register(Company);
 
+// ✅ Start server
 const options = {
   port: Number(serverPort),
   host: "0.0.0.0",
 };
 
-// Start server
 async function startServer() {
   try {
-    try {
-      await server.listen(options);
-      console.log(`✅ Server listening on ${options.host}:${options.port}`);
-    } catch (serverError) {
-      console.error("❌ Error starting server:", serverError);
-      process.exit(1);
-    }
+    await server.listen(options);
+    console.log(`✅ Server running at http://${options.host}:${options.port}`);
   } catch (err) {
-    console.error("Unexpected error during server startup:", err);
+    console.error("❌ Error starting server:", err);
     process.exit(1);
   }
 }
