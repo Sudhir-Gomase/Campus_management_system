@@ -9,7 +9,7 @@ const Admin = require("./src/routes/Admin");
 // const Company = require("./src/routes/Company");
 // const Student = require("./src/routes/Student");
 
-dotenv.config();
+dotenv.config() ;
 
 const serverPort = process.env.PORT || 4000;
 const server = fastify({ logger: true, bodyLimit: 52428800 });

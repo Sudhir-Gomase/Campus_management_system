@@ -5,5 +5,5 @@ async function routes(fastify, options) {
     handler: adminLoginController,
   });
 }
-
+ 
 module.exports = routes;

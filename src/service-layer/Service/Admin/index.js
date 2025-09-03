@@ -7,9 +7,12 @@ const logger = require("../../../utils/logger.js");
 const loginService = async (email, password) => {
   try {
     const user = await getUser(email);
+    console.log("user,user",user)
+     console.log("email",email)
+          console.log("password",password)
     if (!user) return "user not found";
 
-    const passwordsMatch = await bcrypt.compare(password, user.password_node);
+    const passwordsMatch = await bcrypt.compare(password, user.password);
     if (!passwordsMatch) {
       return "password not matched";
     }
@@ -21,7 +24,7 @@ const loginService = async (email, password) => {
     delete user.onsite;
 
     const userPayload = {
-      id: user.user_id,
+      id: user.admin_id,
       email: user.email,
       role: user.role,
     };
@@ -30,7 +33,7 @@ const loginService = async (email, password) => {
     const token = jwt.sign(userPayload, secretBuffer, { expiresIn: 86400 }); // 24h
 
     return {
-      userId: user.user_id,
+      userId: user.admin_id,
       accounts: [],
       token,
       expireIN: "24h",
@@ -41,4 +44,4 @@ const loginService = async (email, password) => {
   }
 };
 
-module.exports = loginService; // ✅ correct CommonJS export
+module.exports = {loginService}; // ✅ correct CommonJS export
