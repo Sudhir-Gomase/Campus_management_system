@@ -48,11 +48,10 @@ export const departmentsController = async (request, reply) => {
   }
 };
 
-export const academicYearDataController
- = async (request, reply) => {
+export const academicYearDataController  = async (request, reply) => {
   try {
-    const { id } = request.query;  // ✅ read query string param
-    const data = await academicYearDataService(id); // pass id to service
+    const { id } = request.query;  
+    const data = await academicYearDataService(id); 
     return reply.send(data);
   } catch (error) {
     logger.error("ERROR :: ACCOUNTS :: academicYearDataController", error);

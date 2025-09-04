@@ -64,19 +64,61 @@ export const departmentsService = async(id)=>{
 }
 
 
-
-export const academicYearDataService = async(id)=>{
-  try{
+export const academicYearDataService = async (id) => {
+  try {
     const data = await academicYearData(id);
-    if(id){
-      console.log("academicYearData",data) 
-        return data
-    }else{
-        return data
+    if (id) {
+      // Initialize counters
+      let placed = 0;
+      let unplaced = 0;
+      let notApplied = 0;
+      let applied = 0;
+      let interviewing = 0;
+
+      // Loop through records and count statuses
+      for (const record of data) {
+        switch (record.placement_status) {
+          case "Selected":
+            placed++;
+            break;
+          case "Rejected":
+            unplaced++;
+            break;
+          case "Not Applied":
+            notApplied++;
+            break;
+          case "Applied":
+            applied++;
+            break;
+          case "Interviewing":
+            interviewing++;
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Prepare count array/object
+      const countArray = {
+        placed,
+        unplaced,
+        notApplied,
+        applied,
+        interviewing,
+      };
+
+      return {
+        data,
+        count: countArray,
+      };
+    } else {
+      return { data };
     }
-  
-  }catch(error){
-   logger.error(`SERVICE :: ADMIN :: academicYearDataService :: ERROR`, error);
+  } catch (error) {
+    logger.error(
+      `SERVICE :: ADMIN :: academicYearDataService :: ERROR`,
+      error
+    );
     throw new Error("INTERNAL SERVER ERROR");
   }
-}
+};
