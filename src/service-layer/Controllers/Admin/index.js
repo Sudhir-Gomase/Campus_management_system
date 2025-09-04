@@ -1,4 +1,4 @@
-import { adminloginService,departmentsService } from "../../Service/Admin/index.js";
+import { adminloginService,departmentsService,academicYearDataService } from "../../Service/Admin/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
 import axios from "axios";
@@ -39,10 +39,23 @@ export const adminLoginController = async (request, reply) => {
 
 export const departmentsController = async (request, reply) => {
   try {
-    const data = await departmentsService();
-    return data
+    const { id } = request.query;  // ✅ read query string param
+    const data = await departmentsService(id); // pass id to service
+    return reply.send(data);
   } catch (error) {
     logger.error("ERROR :: ACCOUNTS :: departmentsController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const academicYearDataController
+ = async (request, reply) => {
+  try {
+    const { id } = request.query;  // ✅ read query string param
+    const data = await academicYearDataService(id); // pass id to service
+    return reply.send(data);
+  } catch (error) {
+    logger.error("ERROR :: ACCOUNTS :: academicYearDataController", error);
     await getStatusCode(error, reply);
   }
 };

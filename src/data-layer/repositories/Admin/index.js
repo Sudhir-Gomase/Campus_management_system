@@ -17,15 +17,40 @@ export const getUserForAdmin = async (email) => {
 };
 
 
-export const department = async () => {
+export const department = async (id) => {
   try {
-    const departments = await knex("departments").select("*");
-    return departments; 
+    let departments;
+
+    if (id) {
+      // ✅ fetch single department by id
+      departments = await knex("departments").select("*").where("department_id", id).first();
+    } else {
+      // ✅ fetch all departments
+      departments = await knex("departments").select("*");
+    }
+
+    return departments;
   } catch (err) {
-    logger.error(
-      `REPOSITORY :: ADMIN :: department :: ERROR`,
-      err
-    );
+    logger.error(`REPOSITORY :: ADMIN :: department :: ERROR`, err);
+    throw new Error("Database query failed");
+  }
+};
+
+export const academicYearData = async (id) => {
+  try {
+    let data;
+
+    if (id) {
+      // ✅ fetch single department by id
+      data = await knex("students").select("*").where("department_id", id);
+    } else {
+      // ✅ fetch all departments
+      data = await knex("departments").select("academic_year" , "department_id");
+    }
+
+    return data;
+  } catch (err) {
+    logger.error(`REPOSITORY :: ADMIN :: academicYearData :: ERROR`, err);
     throw new Error("Database query failed");
   }
 };

@@ -1,4 +1,4 @@
-import { getUserForAdmin,department} from "../../../data-layer/repositories/Admin/index.js";
+import { getUserForAdmin,department,academicYearData} from "../../../data-layer/repositories/Admin/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
@@ -53,12 +53,30 @@ export const adminloginService = async (email, password) => {
 };
 
 
-export const departmentsService = async()=>{
+export const departmentsService = async(id)=>{
   try{
-    const data = await department();
+    const data = await department(id);
     return data
   }catch(error){
    logger.error(`SERVICE :: ADMIN :: departmentsService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+}
+
+
+
+export const academicYearDataService = async(id)=>{
+  try{
+    const data = await academicYearData(id);
+    if(id){
+      console.log("academicYearData",data) 
+        return data
+    }else{
+        return data
+    }
+  
+  }catch(error){
+   logger.error(`SERVICE :: ADMIN :: academicYearDataService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
 }
