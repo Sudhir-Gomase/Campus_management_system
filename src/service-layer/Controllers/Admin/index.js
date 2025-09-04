@@ -1,4 +1,4 @@
-import { adminloginService,departmentsService,academicYearDataService } from "../../Service/Admin/index.js";
+import { adminloginService,departmentsService,academicYearDataService,companyListService} from "../../Service/Admin/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
 import axios from "axios";
@@ -32,7 +32,7 @@ export const adminLoginController = async (request, reply) => {
     });
 
   } catch (error) {
-    logger.error("ERROR :: ACCOUNTS :: loginController", error);
+    logger.error("ERROR :: ADMIN :: loginController", error);
     await getStatusCode(error, reply);
   }
 };
@@ -43,7 +43,7 @@ export const departmentsController = async (request, reply) => {
     const data = await departmentsService(id); // pass id to service
     return reply.send(data);
   } catch (error) {
-    logger.error("ERROR :: ACCOUNTS :: departmentsController", error);
+    logger.error("ERROR :: A :: departmentsController", error);
     await getStatusCode(error, reply);
   }
 };
@@ -54,7 +54,21 @@ export const academicYearDataController  = async (request, reply) => {
     const data = await academicYearDataService(id); 
     return reply.send(data);
   } catch (error) {
-    logger.error("ERROR :: ACCOUNTS :: academicYearDataController", error);
+    logger.error("ERROR :: ADMIN :: academicYearDataController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+
+
+
+export const companylistController  = async (request, reply) => {
+  try {
+    const { id } = request.query;  
+    const data = await companyListService(id); 
+    return reply.send(data);
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: companylistController", error);
     await getStatusCode(error, reply);
   }
 };

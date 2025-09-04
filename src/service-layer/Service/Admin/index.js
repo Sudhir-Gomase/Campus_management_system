@@ -1,4 +1,4 @@
-import { getUserForAdmin,department,academicYearData} from "../../../data-layer/repositories/Admin/index.js";
+import { getUserForAdmin,department,academicYearData,companyList} from "../../../data-layer/repositories/Admin/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
@@ -119,6 +119,27 @@ export const academicYearDataService = async (id) => {
       `SERVICE :: ADMIN :: academicYearDataService :: ERROR`,
       error
     );
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+
+
+export const companyListService = async (id) => {
+  try {
+    const data = await companyList(id);
+
+    if (!id) {
+      const count = data.length;  // no need for a loop
+      return {
+        data: data,
+        count: count,
+      };
+    } else {
+      return data;
+    }
+  } catch (error) {
+    logger.error(`SERVICE :: ADMIN :: companyListService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
 };

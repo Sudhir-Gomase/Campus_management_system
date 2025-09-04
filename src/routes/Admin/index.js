@@ -1,4 +1,7 @@
-import { adminLoginController, departmentsController,academicYearDataController } from "../../service-layer/Controllers/Admin/index.js";
+import { adminLoginController, 
+  departmentsController,
+  academicYearDataController,
+companylistController } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
   fastify.post("/adminlogin", {
@@ -11,5 +14,9 @@ export default async function routes(fastify, options) {
 
    fastify.get("/academicyeardata", {
     handler: academicYearDataController,
+  });
+
+    fastify.get("/companylist", {
+    handler: companylistController,
   });
 }
