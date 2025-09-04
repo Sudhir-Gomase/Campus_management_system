@@ -1,13 +1,14 @@
-
-const fastify = require("fastify");
-const dotenv = require("dotenv");
-const cors = require("@fastify/cors");
-const path = require("path");
+import fastify from "fastify";
+import dotenv from "dotenv";
+import cors from "@fastify/cors";
+import path from "path";
+import multipart from "@fastify/multipart";
+import fastifyJwt from "@fastify/jwt";
 
 // Routes
-const Admin = require("./src/routes/Admin");
-// const Company = require("./src/routes/Company");
-const Student = require("./src/routes/Student");
+import Admin from "./src/routes/Admin/index.js";
+// import Company from "./src/routes/Company/index.js";
+import Student from "./src/routes/Student/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -19,7 +20,7 @@ const server = fastify({ logger: true, bodyLimit: 52428800 });
 console.log(">>>>>>>> DB Password:", process.env.DB_PASSWORD);
 
 // ✅ Register multipart
-server.register(require("@fastify/multipart"));
+server.register(multipart);
 
 // ✅ Register CORS
 const allowedOrigins = []; // Add allowed frontend URLs if needed
@@ -51,7 +52,7 @@ server.addContentTypeParser(
 );
 
 // ✅ JWT plugin
-server.register(require("@fastify/jwt"), {
+server.register(fastifyJwt, {
   secret: process.env.JWT_SECRET_KEY || "default-secret",
 });
 

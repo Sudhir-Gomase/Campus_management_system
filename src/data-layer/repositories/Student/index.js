@@ -1,17 +1,16 @@
-const knex = require("../../database-connections/campus_db/connection.js");
-const logger = require("../../../../src/utils/logger.js");
+import knex from "../../database-connections/campus_db/connection.js";
+import logger from "../../../../src/utils/logger.js";
 
-const getUserForStudent = async (email) => {
+export const getUserForStudent = async (email) => {
   try {
     const user = await knex("students").where("email", email).first();
     return user || null; // explicitly return null if not found
   } catch (err) {
     logger.error(
-      `REPOSITORY :: ADMIN :: getUser :: ERROR for email: ${email}`,
+      `REPOSITORY :: STUDENT :: getUser :: ERROR for email: ${email}`,
       err
     );
-    throw new Error("Database query failed",err);
+    // Error constructor only accepts one message string
+    throw new Error(`Database query failed: ${err.message}`);
   }
 };
-
-module.exports = {getUserForStudent};

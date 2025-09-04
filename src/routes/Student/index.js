@@ -1,9 +1,7 @@
-const {studentLoginController } = require("../../service-layer/Controllers/Student/index");
+import { studentLoginController } from "../../service-layer/Controllers/Student/index.js";
 
-async function routes(fastify, options) {
+export default async function routes(fastify, options) {
   fastify.post("/studentlogin", {
     handler: studentLoginController,
   });
 }
- 
-module.exports = routes;

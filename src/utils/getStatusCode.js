@@ -1,6 +1,4 @@
-// errorHandler.js
-
-const getStatusCode = (error, reply) => {
+export const getStatusCode = (error, reply) => {
   const errorMap = {
     ER_NO_SUCH_TABLE: [404, "Table not found"],
     ER_BAD_REQUEST: [400, "Bad request"],
@@ -29,5 +27,3 @@ const getStatusCode = (error, reply) => {
 
   return reply.status(status).send({ error: message });
 };
-
-module.exports = { getStatusCode };
