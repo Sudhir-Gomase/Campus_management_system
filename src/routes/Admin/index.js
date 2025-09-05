@@ -1,7 +1,10 @@
-import { adminLoginController, 
+import { 
+  adminLoginController, 
   departmentsController,
   academicYearDataController,
-companylistController } from "../../service-layer/Controllers/Admin/index.js";
+  companylistController,
+  donutGraphDataController,
+downloadTemplateController } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
   fastify.post("/adminlogin", {
@@ -19,4 +22,16 @@ export default async function routes(fastify, options) {
     fastify.get("/companylist", {
     handler: companylistController,
   });
+
+    fastify.get("/donutgraphdata", {
+    handler: donutGraphDataController,
+  });
+
+    fastify.get("/downloadtemplate", {
+    handler: downloadTemplateController,
+  });
+
+
+
+
 }

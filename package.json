@@ -4,10 +4,10 @@
   "description": "",
   "main": "app.js",
   "type": "module",
-"scripts": {
-  "start": "node app.js",
-  "start:watch": "nodemon --inspect app.js"
-},
+  "scripts": {
+    "start": "node app.js",
+    "start:watch": "nodemon --inspect app.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,7 +1,10 @@
-import { getUserForAdmin,department,academicYearData,companyList} from "../../../data-layer/repositories/Admin/index.js";
+import { getUserForAdmin,department,academicYearData,companyList,donutGraphData,donutGraphDataFromLinkage} from "../../../data-layer/repositories/Admin/index.js";
+import fs from "fs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
+import { createObjectCsvWriter } from "csv-writer";
+
 
 export const adminloginService = async (email, password) => {
   try {
@@ -64,56 +67,12 @@ export const departmentsService = async(id)=>{
 }
 
 
-export const academicYearDataService = async (id) => {
+export const academicYearDataService = async (year,department_id,company_id,status) => {
   try {
-    const data = await academicYearData(id);
-    if (id) {
-      // Initialize counters
-      let placed = 0;
-      let unplaced = 0;
-      let notApplied = 0;
-      let applied = 0;
-      let interviewing = 0;
+    const data = await academicYearData(year,department_id,company_id,status);
 
-      // Loop through records and count statuses
-      for (const record of data) {
-        switch (record.placement_status) {
-          case "Selected":
-            placed++;
-            break;
-          case "Rejected":
-            unplaced++;
-            break;
-          case "Not Applied":
-            notApplied++;
-            break;
-          case "Applied":
-            applied++;
-            break;
-          case "Interviewing":
-            interviewing++;
-            break;
-          default:
-            break;
-        }
-      }
-
-      // Prepare count array/object
-      const countArray = {
-        placed,
-        unplaced,
-        notApplied,
-        applied,
-        interviewing,
-      };
-
-      return {
-        data,
-        count: countArray,
-      };
-    } else {
-      return { data };
-    }
+    
+    return data
   } catch (error) {
     logger.error(
       `SERVICE :: ADMIN :: academicYearDataService :: ERROR`,
@@ -130,7 +89,7 @@ export const companyListService = async (id) => {
     const data = await companyList(id);
 
     if (!id) {
-      const count = data.length;  // no need for a loop
+      const count = data.length;  
       return {
         data: data,
         count: count,
@@ -142,4 +101,62 @@ export const companyListService = async (id) => {
     logger.error(`SERVICE :: ADMIN :: companyListService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
+};
+
+
+export const donutGraphDataService = async (department_id) => {
+  try {
+    const students = await donutGraphData(department_id); // students of department
+    const studentIds = students.map(s => s.student_id);
+
+     const statuses = await donutGraphDataFromLinkage(studentIds);
+    // Fetch all placement statuses for these students in one go
+   
+
+    // Initialize counters
+    const counts = {
+      applied: 0,
+      shortlisted: 0,
+      interviewed: 0,
+      selected: 0,
+      rejected: 0,
+      placed: 0,
+      unplaced: 0,
+      total: students.length
+    };
+
+    // Count statuses
+    for (const row of statuses) {
+      if (row.placement_status && counts.hasOwnProperty(row.placement_status)) {
+        counts[row.placement_status] += 1;
+      }
+    }
+
+    // Calculate placed/unplaced
+    counts.placed = counts.selected;
+    counts.unplaced = counts.total - counts.placed;
+
+    return counts;
+  } catch (error) {
+    logger.error(`SERVICE :: ADMIN :: donutGraphDataService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+
+export const downloadTemplateService = async () => {
+  const filePath = "StudentRegister.csv";
+
+  const headers = [
+    { id: "email", title: "Email" },
+    { id: "roll_no", title: "Roll No" },
+  ];
+
+  const csvWriter = createObjectCsvWriter({
+    path: filePath,
+    header: headers,
+  });
+
+  await csvWriter.writeRecords([]); // only headers
+  return filePath;
 };
