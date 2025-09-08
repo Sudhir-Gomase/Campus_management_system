@@ -4,9 +4,11 @@ import { getUserForAdmin,
   companyList,
   donutGraphData,
   donutGraphDataFromLinkage,
-registerBulkEmployee,
-addstudent,
-overallCompanyData
+  registerBulkEmployee,
+  addstudent,
+  overallCompanyData,
+  overallCompanyDataUpdate,
+  deleteStudent
 } from "../../../data-layer/repositories/Admin/index.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
@@ -177,6 +179,7 @@ export const downloadTemplateService = async () => {
     try{
       // console.log("employees",employees)
     const data = await registerBulkEmployee(employees);
+    return data
     }catch(error){
     logger.error(`SERVICE :: ADMIN :: registerBulkEmployeeService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
@@ -188,20 +191,40 @@ export const downloadTemplateService = async () => {
   export const addstudentService = async (employees) => {
     try{
     const data = await addstudent(employees);
+    return data;
     }catch(error){
     logger.error(`SERVICE :: ADMIN :: addstudentService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
   };
 
-  
-  
-  export const overallCompanyDataService = async (employees) => {
+    export const overallCompanyDataService = async (is_approved) => {
     try{
-    const data = await overallCompanyData(employees);
+    const data = await overallCompanyData(is_approved);
     return data
     }catch(error){
     logger.error(`SERVICE :: ADMIN :: overallCompanyDataService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+  };
+  
+  export const overallCompanyDataUpdateService = async (company_id,is_approved) => {
+    try{
+    const data = await overallCompanyDataUpdate(company_id,is_approved);
+    return data
+    }catch(error){
+    logger.error(`SERVICE :: ADMIN :: overallCompanyDataUpdateService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+  };
+
+  
+    export const deleteStudentService = async (student_id) => {
+    try{
+    const data = await deleteStudent(student_id);
+    return data
+    }catch(error){
+    logger.error(`SERVICE :: ADMIN :: deleteStudentService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
   };

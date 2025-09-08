@@ -4,9 +4,12 @@ import { adminloginService,
   companyListService,
   donutGraphDataService,
   downloadTemplateService,
-registerBulkEmployeeService,
-addstudentService,
-overallCompanyDataService} from "../../Service/Admin/index.js";
+  registerBulkEmployeeService,
+  addstudentService,
+  overallCompanyDataService,
+  overallCompanyDataUpdateService,
+  deleteStudentService
+} from "../../Service/Admin/index.js";
 import fastifyMultipart from "@fastify/multipart";
 import { Readable } from "stream";
 import fs from "fs";
@@ -209,7 +212,8 @@ export const registerBulkEmployeeController = async (request, reply) => {
 
   export const overallCompanyDataController  = async (request, reply) => {
   try {
-    const data = await overallCompanyDataService(record); 
+    const { is_approved }= request?.query
+    const data = await overallCompanyDataService(is_approved); 
     return reply.send(data);
   } catch (error) {
     logger.error("ERROR :: ADMIN :: overallCompanyDataController", error);
@@ -219,3 +223,35 @@ export const registerBulkEmployeeController = async (request, reply) => {
 
 
 
+  export const overallCompanyDataUpdateController  = async (request, reply) => {
+  try {
+    const { company_id,is_approved }= request?.params
+    const data = await overallCompanyDataUpdateService(company_id,is_approved); 
+    if(data === 1){
+    return reply.send("Updated successfully");
+    }else{
+      return reply.send("Data is not Updated.");
+    }
+     
+    
+    
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: overallCompanyDataUpdateController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+  export const deleteStudentController  = async (request, reply) => {
+  try {
+    const { student_id, }= request?.params
+    const data = await deleteStudentService(student_id); 
+     if(data === 1){
+    return reply.send("Data is Deleted successfully.");
+    }else{
+      return reply.send("Data is not Deleted successfully.");
+    }
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: deleteStudentController", error);
+    await getStatusCode(error, reply);
+  }
+};

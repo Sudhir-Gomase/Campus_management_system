@@ -7,7 +7,9 @@ import {
   downloadTemplateController,
   registerBulkEmployeeController,
   addStudentController,
-  overallCompanyDataController
+  overallCompanyDataController,
+  overallCompanyDataUpdateController,
+  deleteStudentController
 } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
@@ -45,6 +47,14 @@ export default async function routes(fastify, options) {
 
    fastify.get("/overallcompanydata", {
     handler: overallCompanyDataController,
+  });
+
+  fastify.put("/overallcompanydata/:company_id/:is_approved", {
+    handler: overallCompanyDataUpdateController,
+  });
+
+    fastify.delete("/deletestudent/:student_id", {
+    handler: deleteStudentController,
   });
 
 

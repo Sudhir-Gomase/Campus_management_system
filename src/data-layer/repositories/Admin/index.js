@@ -214,10 +214,10 @@ export const addstudent = async (employees) => {
           .where({ student_id: existing.student_id })
           .update({
             email,
-            roll_no,
+            roll_no,    
             department_id,
           });
-
+          return "Upadted succesfully"
       } else {
         // Generate a random password
         const saltRounds = 10;
@@ -233,7 +233,10 @@ export const addstudent = async (employees) => {
           password, // save generated password
         });
       }
+        return "Inserted successfully"
     }
+
+  
    catch (err) {
     logger.error(`REPOSITORY :: ADMIN :: registerBulkEmployee :: ERROR`, err);
     throw new Error("Database query failed");
@@ -242,13 +245,46 @@ export const addstudent = async (employees) => {
 
 
 
-export const overallCompanyData = async () => {
+export const overallCompanyData = async (is_approved) => {
   try {
-    const students = await knex("companies").where("is_approved", false)
-    console.log("student",students)
+    if(is_approved){
+    const students = await knex("companies").select("*").where("is_approved", is_approved);
     return students; 
+    }else{
+    const students = await knex("companies").select("*");
+    return students; 
+    }
   } catch (err) {
     logger.error(`REPOSITORY :: students :: overallCompanyData :: `,err);
+    throw new Error("Database query failed");
+  }
+};
+
+
+
+export const overallCompanyDataUpdate = async (company_id,is_approved) => {
+  try {
+    const students = await knex("companies")
+    .where("company_id", company_id)
+    .update("is_approved",is_approved);
+    return students; 
+    
+  } catch (err) {
+    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `,err);
+    throw new Error("Database query failed");
+  }
+};
+
+
+export const deleteStudent = async (student_id) => {
+  try {
+    const students = await knex("students")
+    .where("student_id", student_id)
+    .delete();
+    return students; 
+    
+  } catch (err) {
+    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `,err);
     throw new Error("Database query failed");
   }
 };
