@@ -1,9 +1,19 @@
-import { getUserForAdmin,department,academicYearData,companyList,donutGraphData,donutGraphDataFromLinkage} from "../../../data-layer/repositories/Admin/index.js";
+import { getUserForAdmin,
+  department,
+  academicYearData,
+  companyList,
+  donutGraphData,
+  donutGraphDataFromLinkage,
+registerBulkEmployee,
+addstudent,
+overallCompanyData
+} from "../../../data-layer/repositories/Admin/index.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
 import { createObjectCsvWriter } from "csv-writer";
+
 
 
 export const adminloginService = async (email, password) => {
@@ -160,3 +170,38 @@ export const downloadTemplateService = async () => {
   await csvWriter.writeRecords([]); // only headers
   return filePath;
 };
+
+
+
+  export const registerBulkEmployeeService = async (employees) => {
+    try{
+      // console.log("employees",employees)
+    const data = await registerBulkEmployee(employees);
+    }catch(error){
+    logger.error(`SERVICE :: ADMIN :: registerBulkEmployeeService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+  };
+
+
+
+  export const addstudentService = async (employees) => {
+    try{
+    const data = await addstudent(employees);
+    }catch(error){
+    logger.error(`SERVICE :: ADMIN :: addstudentService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+  };
+
+  
+  
+  export const overallCompanyDataService = async (employees) => {
+    try{
+    const data = await overallCompanyData(employees);
+    return data
+    }catch(error){
+    logger.error(`SERVICE :: ADMIN :: overallCompanyDataService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+  };

@@ -22,6 +22,7 @@ console.log(">>>>>>>> DB Password:", process.env.DB_PASSWORD);
 // ✅ Register multipart
 server.register(multipart);
 
+
 // ✅ Register CORS
 const allowedOrigins = []; // Add allowed frontend URLs if needed
 server.register(cors, {
@@ -64,7 +65,6 @@ server.addHook("onRequest", async (request, reply) => {
   if (publicRoutes.some(route => path.startsWith(route))) {
     return; // Skip JWT verification for public routes
   }
-
   try {
     await request.jwtVerify();
   } catch (err) {

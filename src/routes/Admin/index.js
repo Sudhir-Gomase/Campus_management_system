@@ -4,7 +4,11 @@ import {
   academicYearDataController,
   companylistController,
   donutGraphDataController,
-downloadTemplateController } from "../../service-layer/Controllers/Admin/index.js";
+  downloadTemplateController,
+  registerBulkEmployeeController,
+  addStudentController,
+  overallCompanyDataController
+} from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
   fastify.post("/adminlogin", {
@@ -31,7 +35,17 @@ export default async function routes(fastify, options) {
     handler: downloadTemplateController,
   });
 
+  fastify.post("/registerbulkemployee/:department_id", {
+    handler: registerBulkEmployeeController,
+  });
 
+    fastify.post("/addstudent", {
+    handler: addStudentController,
+  });
+
+   fastify.get("/overallcompanydata", {
+    handler: overallCompanyDataController,
+  });
 
 
 }

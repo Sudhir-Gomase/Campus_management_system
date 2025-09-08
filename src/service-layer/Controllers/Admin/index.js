@@ -3,8 +3,15 @@ import { adminloginService,
   academicYearDataService,
   companyListService,
   donutGraphDataService,
-  downloadTemplateService} from "../../Service/Admin/index.js";
+  downloadTemplateService,
+registerBulkEmployeeService,
+addstudentService,
+overallCompanyDataService} from "../../Service/Admin/index.js";
+import fastifyMultipart from "@fastify/multipart";
+import { Readable } from "stream";
 import fs from "fs";
+import path from "path";
+import csv from "csv-parser";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
 import axios from "axios";
@@ -111,4 +118,104 @@ export const downloadTemplateController  = async (request, reply) => {
     logger.error("ERROR :: ADMIN :: downloadTemplateController", error);
     await getStatusCode(error, reply);
   }
+}
+  
+export const registerBulkEmployeeController = async (request, reply) => {
+  try {
+    const { department_id } = request?.params;
+    const file = await request.file();
+
+    if (!file) {
+      return reply.status(400).send({ message: "No file uploaded" });
+    }
+
+    const results = [];
+    const errors = [];
+
+    // Read uploaded file into buffer
+    const fileBuffer = await file.toBuffer();
+
+    // Parse CSV with normalized headers
+    await new Promise((resolve, reject) => {
+      Readable.from(fileBuffer)
+        .pipe(csv({ mapHeaders: ({ header }) => header.trim().toLowerCase() }))
+        .on("data", (row) => results.push(row))
+        .on("end", resolve)
+        .on("error", reject);
+    });
+
+    let successCount = 0;
+    const employees = []; // ✅ use array to collect rows
+
+    for (const [index, emp] of results.entries()) {
+      try {
+        const email = emp.email;
+        const rollno = emp.rollno;
+
+        // Skip blank rows
+        if ((!email || !rollno) && Object.values(emp).every((v) => !v)) {
+          continue;
+        }
+
+        if (!email || !rollno) {
+          throw new Error(`Row ${index + 1}: Missing required fields`);
+        }
+
+        employees.push({
+          email: email.trim(),
+          roll_no: rollno.trim(),
+          department_id: Number(department_id),
+        });
+
+        successCount++;
+      } catch (err) {
+        errors.push({
+          row: index + 1,
+          email: emp.email,
+          rollno: emp.rollno,
+          error: err.message,
+        });
+        logger.error("Bulk employee insert error", err);
+      }
+    }
+
+    // ✅ call service with full array
+    await registerBulkEmployeeService(employees);
+
+    return reply.send({
+      total: results.length,
+      success: successCount,
+      failed: errors.length,
+      errors,
+    });
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: registerBulkEmployeeController", error);
+    await getStatusCode(error, reply);
+  }
 };
+
+  
+  export const addStudentController  = async (request, reply) => {
+  try {
+     const record = request?.body;
+    const data = await addstudentService(record); 
+    return reply.send(data);
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: addStudentController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+
+  export const overallCompanyDataController  = async (request, reply) => {
+  try {
+    const data = await overallCompanyDataService(record); 
+    return reply.send(data);
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: overallCompanyDataController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+
+
