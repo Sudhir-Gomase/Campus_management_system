@@ -219,27 +219,28 @@ export const registerBulkEmployeeController = async (request, reply) => {
     logger.error("ERROR :: ADMIN :: overallCompanyDataController", error);
     await getStatusCode(error, reply);
   }
-};
+  };
 
-
-
-  export const overallCompanyDataUpdateController  = async (request, reply) => {
-  try {
-    const { company_id,is_approved }= request?.params
-    const data = await overallCompanyDataUpdateService(company_id,is_approved); 
-    if(data === 1){
-    return reply.send("Updated successfully");
-    }else{
-      return reply.send("Data is not Updated.");
+  export const overallCompanyDataUpdateController = async (request, reply) => {
+    try {
+      const { company_id, is_approved } = request?.params;
+      const result = await overallCompanyDataUpdateService(company_id, is_approved);
+      if (!result || result.success === false) {
+        return reply.code(404).send({
+          success: false,
+          message: result?.message || "Data not updated",
+        });
+      }
+      return reply.send({
+        success: true,
+        message: result.message,
+        ...(result.credentials ? { credentials: result.credentials } : {}), // only send if created
+      });
+    } catch (err) {
+      logger.error("ERROR :: ADMIN :: overallCompanyDataUpdateController", error);
+      await getStatusCode(err, reply);
     }
-     
-    
-    
-  } catch (error) {
-    logger.error("ERROR :: ADMIN :: overallCompanyDataUpdateController", error);
-    await getStatusCode(error, reply);
-  }
-};
+  };
 
   export const deleteStudentController  = async (request, reply) => {
   try {
@@ -254,4 +255,4 @@ export const registerBulkEmployeeController = async (request, reply) => {
     logger.error("ERROR :: ADMIN :: deleteStudentController", error);
     await getStatusCode(error, reply);
   }
-};
+  };

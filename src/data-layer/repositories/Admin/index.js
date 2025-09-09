@@ -3,6 +3,7 @@ import logger from "../../../../src/utils/logger.js";
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import securePassword from "secure-random-password";
+ const saltRounds = 10;
 export const generatePassword = () => {
   // Your password generation logic here
   // For simplicity, you can use a library like 'secure-random-password'
@@ -220,7 +221,7 @@ export const addstudent = async (employees) => {
           return "Upadted succesfully"
       } else {
         // Generate a random password
-        const saltRounds = 10;
+       
         const passwordHash= generatePassword(8);
         const password  = await bcrypt.hash(passwordHash, saltRounds);
 
@@ -247,7 +248,7 @@ export const addstudent = async (employees) => {
 
 export const overallCompanyData = async (is_approved) => {
   try {
-    if(is_approved){
+    if(is_approved === "true"){
     const students = await knex("companies").select("*").where("is_approved", is_approved);
     return students; 
     }else{
@@ -262,15 +263,55 @@ export const overallCompanyData = async (is_approved) => {
 
 
 
-export const overallCompanyDataUpdate = async (company_id,is_approved) => {
+export const overallCompanyDataUpdate = async (company_id, is_approved) => {
   try {
-    const students = await knex("companies")
-    .where("company_id", company_id)
-    .update("is_approved",is_approved);
-    return students; 
-    
+    // Update approval status
+    const updatedRows = await knex("companies")
+      .where("company_id", company_id)
+      .update("is_approved", is_approved);
+
+    if (updatedRows === 0) {
+      return { success: false, message: "No company found with given ID" };
+    }
+
+    // If approved -> create credentials
+    if (is_approved === "true") {
+      const [record] = await knex("companies")
+        .select("*")
+        .where("company_id", company_id);
+
+      if (record) {
+        let username = record.name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        let password = username + "123";
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        await knex("companies")
+          .where("company_id", company_id)
+          .update({
+            username,
+            password: passwordHash,
+          });
+
+        return {
+          success: true,
+          message: "Company credentials created successfully",
+          credentials: {
+            username,
+            password, // ⚠️ raw password only if you intend to send to company
+          },
+        };
+      }
+    }
+
+    // If explicitly set to false
+    if (is_approved === "false") {
+      return { success: true, message: "Company approval status updated successfully" };
+    }
+
+    // Fallback
+    return { success: true, message: "Update successful" };
   } catch (err) {
-    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `,err);
+    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `, err);
     throw new Error("Database query failed");
   }
 };
