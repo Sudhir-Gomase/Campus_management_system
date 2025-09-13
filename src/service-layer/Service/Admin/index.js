@@ -1,4 +1,5 @@
-import { getUserForAdmin,
+import {
+  getUserForAdmin,
   department,
   academicYearData,
   companyList,
@@ -8,15 +9,13 @@ import { getUserForAdmin,
   addstudent,
   overallCompanyData,
   overallCompanyDataUpdate,
-  deleteStudent
+  deleteStudent,
 } from "../../../data-layer/repositories/Admin/index.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
 import { createObjectCsvWriter } from "csv-writer";
-
-
 
 export const adminloginService = async (email, password) => {
   try {
@@ -41,7 +40,7 @@ export const adminloginService = async (email, password) => {
 
     // payload for JWT
     const userPayload = {
-      id: user.admin_id,
+      adminId: user.admin_id,
       email: user.email,
       role: user.role,
     };
@@ -53,7 +52,7 @@ export const adminloginService = async (email, password) => {
     const token = jwt.sign(userPayload, secretBuffer, { expiresIn: "24h" });
 
     return {
-      userId: user.admin_id,
+      adminId: user.admin_id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -67,41 +66,43 @@ export const adminloginService = async (email, password) => {
   }
 };
 
-
-export const departmentsService = async(id)=>{
-  try{
-    const data = await department(id);
-    return data
-  }catch(error){
-   logger.error(`SERVICE :: ADMIN :: departmentsService :: ERROR`, error);
-    throw new Error("INTERNAL SERVER ERROR");
-  }
-}
-
-
-export const academicYearDataService = async (year,department_id,company_id,status) => {
+export const departmentsService = async (id) => {
   try {
-    const data = await academicYearData(year,department_id,company_id,status);
-
-    
-    return data
+    const data = await department(id);
+    return data;
   } catch (error) {
-    logger.error(
-      `SERVICE :: ADMIN :: academicYearDataService :: ERROR`,
-      error
-    );
+    logger.error(`SERVICE :: ADMIN :: departmentsService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
 };
 
+export const academicYearDataService = async (
+  year,
+  department_id,
+  company_id,
+  status
+) => {
+  try {
+    const data = await academicYearData(
+      year,
+      department_id,
+      company_id,
+      status
+    );
 
+    return data;
+  } catch (error) {
+    logger.error(`SERVICE :: ADMIN :: academicYearDataService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
 
 export const companyListService = async (id) => {
   try {
     const data = await companyList(id);
 
     if (!id) {
-      const count = data.length;  
+      const count = data.length;
       return {
         data: data,
         count: count,
@@ -115,15 +116,13 @@ export const companyListService = async (id) => {
   }
 };
 
-
 export const donutGraphDataService = async (department_id) => {
   try {
     const students = await donutGraphData(department_id); // students of department
-    const studentIds = students.map(s => s.student_id);
+    const studentIds = students.map((s) => s.student_id);
 
-     const statuses = await donutGraphDataFromLinkage(studentIds);
+    const statuses = await donutGraphDataFromLinkage(studentIds);
     // Fetch all placement statuses for these students in one go
-   
 
     // Initialize counters
     const counts = {
@@ -134,7 +133,7 @@ export const donutGraphDataService = async (department_id) => {
       rejected: 0,
       placed: 0,
       unplaced: 0,
-      total: students.length
+      total: students.length,
     };
 
     // Count statuses
@@ -155,7 +154,6 @@ export const donutGraphDataService = async (department_id) => {
   }
 };
 
-
 export const downloadTemplateService = async () => {
   const filePath = "StudentRegister.csv";
 
@@ -173,58 +171,65 @@ export const downloadTemplateService = async () => {
   return filePath;
 };
 
-
-
-  export const registerBulkEmployeeService = async (employees) => {
-    try{
-      // console.log("employees",employees)
+export const registerBulkEmployeeService = async (employees) => {
+  try {
+    // console.log("employees",employees)
     const data = await registerBulkEmployee(employees);
-    return data
-    }catch(error){
-    logger.error(`SERVICE :: ADMIN :: registerBulkEmployeeService :: ERROR`, error);
+    return data;
+  } catch (error) {
+    logger.error(
+      `SERVICE :: ADMIN :: registerBulkEmployeeService :: ERROR`,
+      error
+    );
     throw new Error("INTERNAL SERVER ERROR");
   }
-  };
+};
 
-
-
-  export const addstudentService = async (employees) => {
-    try{
+export const addstudentService = async (employees) => {
+  try {
     const data = await addstudent(employees);
     return data;
-    }catch(error){
+  } catch (error) {
     logger.error(`SERVICE :: ADMIN :: addstudentService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
-  };
+};
 
-    export const overallCompanyDataService = async (is_approved) => {
-    try{
+export const overallCompanyDataService = async (is_approved) => {
+  try {
     const data = await overallCompanyData(is_approved);
-    return data
-    }catch(error){
-    logger.error(`SERVICE :: ADMIN :: overallCompanyDataService :: ERROR`, error);
+    return data;
+  } catch (error) {
+    logger.error(
+      `SERVICE :: ADMIN :: overallCompanyDataService :: ERROR`,
+      error
+    );
     throw new Error("INTERNAL SERVER ERROR");
   }
-  };
-  
-  export const overallCompanyDataUpdateService = async (company_id,is_approved) => {
-    try{
-    const data = await overallCompanyDataUpdate(company_id,is_approved);
-    return data
-    }catch(error){
-    logger.error(`SERVICE :: ADMIN :: overallCompanyDataUpdateService :: ERROR`, error);
-    throw new Error("INTERNAL SERVER ERROR");
-  }
-  };
+};
 
-  
-    export const deleteStudentService = async (student_id) => {
-    try{
+export const overallCompanyDataUpdateService = async (
+  company_id,
+  is_approved
+) => {
+  try {
+    const data = await overallCompanyDataUpdate(company_id, is_approved);
+    return data;
+  } catch (error) {
+    logger.error(
+      `SERVICE :: ADMIN :: overallCompanyDataUpdateService :: ERROR`,
+      error
+    );
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const deleteStudentService = async (student_id) => {
+  try {
     const data = await deleteStudent(student_id);
-    return data
-    }catch(error){
+    return data;
+  } catch (error) {
     logger.error(`SERVICE :: ADMIN :: deleteStudentService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
-  };
+};

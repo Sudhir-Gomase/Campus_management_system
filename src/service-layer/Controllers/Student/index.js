@@ -1,4 +1,9 @@
-import { studentloginService } from "../../Service/Student/index.js";
+import {
+  studentloginService,
+  studentProfileUpdateService,
+  studentDataService,
+  allCompanyListForStudentService,
+} from "../../Service/Student/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
 import axios from "axios";
@@ -16,7 +21,7 @@ export const studentLoginController = async (request, reply) => {
       return reply.code(400).send({ error: "Invalid Credentials." });
     }
 
-    const { student_id, token, expireIN, email: userEmail, name, phone } = data;
+    const { studentId, token, expireIN, email: userEmail, name, phone } = data;
 
     if (!token) {
       return reply.code(500).send({ error: "Token generation failed" });
@@ -24,7 +29,7 @@ export const studentLoginController = async (request, reply) => {
 
     return reply.send({
       token,
-      student_id,
+      studentId,
       expireIn: expireIN,
       role: "student",
       email: userEmail,
@@ -32,9 +37,45 @@ export const studentLoginController = async (request, reply) => {
       phone,
       message: "Login successful",
     });
-
   } catch (error) {
     logger.error("ERROR :: ACCOUNTS :: studentLoginController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const studentDataController = async (request, reply) => {
+  try {
+    let { id } = request?.params;
+    console.log("id", id);
+    const result = await studentDataService(id);
+    return result;
+  } catch (error) {
+    logger.error("ERROR :: Student :: studentDataController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const studentProfileUpdateController = async (request, reply) => {
+  try {
+    const data = request?.body;
+    const result = await studentProfileUpdateService(data);
+    return result;
+  } catch (error) {
+    logger.error("ERROR :: Student :: studentDataController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const allCompanyListForStudentController = async (request, reply) => {
+  try {
+    const { id } = request?.params;
+    const result = await allCompanyListForStudentService(id);
+    return result;
+  } catch (error) {
+    logger.error(
+      "ERROR :: Student :: allCompanyListForStudentController",
+      error
+    );
     await getStatusCode(error, reply);
   }
 };

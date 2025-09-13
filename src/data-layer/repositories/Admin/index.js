@@ -3,7 +3,7 @@ import logger from "../../../../src/utils/logger.js";
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import securePassword from "secure-random-password";
- const saltRounds = 10;
+const saltRounds = 10;
 export const generatePassword = () => {
   // Your password generation logic here
   // For simplicity, you can use a library like 'secure-random-password'
@@ -28,13 +28,15 @@ export const getUserForAdmin = async (email) => {
   }
 };
 
-
 export const department = async (id) => {
   try {
     let departments;
     if (id) {
       // ✅ fetch single department by id
-      departments = await knex("departments").select("*").where("department_id", id).first();
+      departments = await knex("departments")
+        .select("*")
+        .where("department_id", id)
+        .first();
     } else {
       // ✅ fetch all departments
       departments = await knex("departments").select("*");
@@ -47,7 +49,12 @@ export const department = async (id) => {
   }
 };
 
-export const academicYearData = async (year, department_id, company_id, status) => {
+export const academicYearData = async (
+  year,
+  department_id,
+  company_id,
+  status
+) => {
   try {
     let data;
 
@@ -99,7 +106,10 @@ export const companyList = async (id) => {
     let companyList;
     if (id) {
       // ✅ fetch single department by id
-      companyList = await knex("companies").select("*").where("company_id", id).first();
+      companyList = await knex("companies")
+        .select("*")
+        .where("company_id", id)
+        .first();
     } else {
       // ✅ fetch all departments
       companyList = await knex("companies").select("*");
@@ -111,13 +121,15 @@ export const companyList = async (id) => {
   }
 };
 
-
 export const donutGraphData = async (department_id) => {
   try {
-    const students = await knex("students").where("department_id", department_id)
-    return students; 
+    const students = await knex("students").where(
+      "department_id",
+      department_id
+    );
+    return students;
   } catch (err) {
-    logger.error(`REPOSITORY :: students :: donutGraphData :: `,err);
+    logger.error(`REPOSITORY :: students :: donutGraphData :: `, err);
     throw new Error("Database query failed");
   }
 };
@@ -127,9 +139,12 @@ export const donutGraphDataFromLinkage = async (student_id) => {
     const statuses = await knex("student_companies")
       .whereIn("student_id", student_id)
       .select("placement_status");
-      return statuses
+    return statuses;
   } catch (err) {
-    logger.error(`REPOSITORY :: students :: donutGraphDataFromLinkage :: `,err);
+    logger.error(
+      `REPOSITORY :: students :: donutGraphDataFromLinkage :: `,
+      err
+    );
     throw new Error("Database query failed");
   }
 };
@@ -168,9 +183,8 @@ export const registerBulkEmployee = async (employees) => {
       } else {
         // Generate a random password
         const saltRounds = 10;
-        const passwordHash= generatePassword(8);
-        const password  = await bcrypt.hash(passwordHash, saltRounds);
-
+        const passwordHash = generatePassword(8);
+        const password = await bcrypt.hash(passwordHash, saltRounds);
 
         // Insert new student with password
         const [id] = await knex("students").insert({
@@ -191,77 +205,67 @@ export const registerBulkEmployee = async (employees) => {
   }
 };
 
-
-
 export const addstudent = async (employees) => {
   try {
     const hasTable = await knex.schema.hasTable("students");
     if (!hasTable) {
       throw new Error("Table 'students' does not exist");
     }
-      const { email, roll_no, department_id } = employees;
+    const { email, roll_no, department_id } = employees;
 
-      // Check if student exists by roll_no or email within department
-      const existing = await knex("students")
-        .where("department_id", department_id)
-        .andWhere((qb) => {
-          qb.where("roll_no", roll_no).orWhere("email", email);
-        })
-        .first();
-      //console.log("existing",existing)
-      if (existing) {
-        // Update existing student
-        await knex("students")
-          .where({ student_id: existing.student_id })
-          .update({
-            email,
-            roll_no,    
-            department_id,
-          });
-          return "Upadted succesfully"
-      } else {
-        // Generate a random password
-       
-        const passwordHash= generatePassword(8);
-        const password  = await bcrypt.hash(passwordHash, saltRounds);
+    // Check if student exists by roll_no or email within department
+    const existing = await knex("students")
+      .where("department_id", department_id)
+      .andWhere((qb) => {
+        qb.where("roll_no", roll_no).orWhere("email", email);
+      })
+      .first();
+    //console.log("existing",existing)
+    if (existing) {
+      // Update existing student
+      await knex("students").where({ student_id: existing.student_id }).update({
+        email,
+        roll_no,
+        department_id,
+      });
+      return "Upadted succesfully";
+    } else {
+      // Generate a random password
 
+      const passwordHash = generatePassword(8);
+      const password = await bcrypt.hash(passwordHash, saltRounds);
 
-        // Insert new student with password
-        const [id] = await knex("students").insert({
-          email,
-          roll_no,
-          department_id,
-          password, // save generated password
-        });
-      }
-        return "Inserted successfully"
+      // Insert new student with password
+      const [id] = await knex("students").insert({
+        email,
+        roll_no,
+        department_id,
+        password, // save generated password
+      });
     }
-
-  
-   catch (err) {
+    return "Inserted successfully";
+  } catch (err) {
     logger.error(`REPOSITORY :: ADMIN :: registerBulkEmployee :: ERROR`, err);
     throw new Error("Database query failed");
   }
 };
 
-
-
 export const overallCompanyData = async (is_approved) => {
   try {
-    if(is_approved === "true"){
-    const students = await knex("companies").select("*").where("is_approved", is_approved);
-    return students; 
-    }else{
-    const students = await knex("companies").select("*");
-    return students; 
+    if (is_approved === "true") {
+      const students = await knex("companies")
+        .select("*")
+        .where("is_approved", is_approved);
+      return students;
+    } else {
+      const students = await knex("companies").select("*");
+      return students;
     }
   } catch (err) {
-    logger.error(`REPOSITORY :: students :: overallCompanyData :: `,err);
+    logger.error(`REPOSITORY :: students :: overallCompanyData :: `, err);
     throw new Error("Database query failed");
   }
 };
-
-
 
 export const overallCompanyDataUpdate = async (company_id, is_approved) => {
   try {
@@ -285,12 +289,10 @@ export const overallCompanyDataUpdate = async (company_id, is_approved) => {
         let password = username + "123";
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        await knex("companies")
-          .where("company_id", company_id)
-          .update({
-            username,
-            password: passwordHash,
-          });
+        await knex("companies").where("company_id", company_id).update({
+          username,
+          password: passwordHash,
+        });
 
         return {
           success: true,
@@ -305,7 +307,10 @@ export const overallCompanyDataUpdate = async (company_id, is_approved) => {
 
     // If explicitly set to false
     if (is_approved === "false") {
-      return { success: true, message: "Company approval status updated successfully" };
+      return {
+        success: true,
+        message: "Company approval status updated successfully",
+      };
     }
 
     // Fallback
@@ -316,16 +321,14 @@ export const overallCompanyDataUpdate = async (company_id, is_approved) => {
   }
 };
 
-
 export const deleteStudent = async (student_id) => {
   try {
     const students = await knex("students")
-    .where("student_id", student_id)
-    .delete();
-    return students; 
-    
+      .where("student_id", student_id)
+      .delete();
+    return students;
   } catch (err) {
-    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `,err);
+    logger.error(`REPOSITORY :: students :: overallCompanyDataUpdate :: `, err);
     throw new Error("Database query failed");
   }
 };

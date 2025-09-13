@@ -1,4 +1,9 @@
-import { getUserForStudent } from "../../../data-layer/repositories/Student/index.js";
+import {
+  getUserForStudent,
+  studentData,
+  studentProfileUpdate,
+  allCompanyListForStudent,
+} from "../../../data-layer/repositories/Student/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
@@ -48,6 +53,42 @@ export const studentloginService = async (email, password) => {
     };
   } catch (err) {
     logger.error(`SERVICE :: STUDENT :: login :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const studentDataService = async (id) => {
+  try {
+    const result = await studentData(id);
+    return result;
+  } catch (err) {
+    logger.error(`SERVICE :: STUDENT :: studentDataService :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const studentProfileUpdateService = async (data) => {
+  try {
+    const result = await studentProfileUpdate(data);
+    return result;
+  } catch (err) {
+    logger.error(
+      `SERVICE :: STUDENT :: studentProfileUpdateService :: ERROR`,
+      err
+    );
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const allCompanyListForStudentService = async (id) => {
+  try {
+    const result = await allCompanyListForStudent(id);
+    return result;
+  } catch (err) {
+    logger.error(
+      `SERVICE :: STUDENT :: allCompanyListForStudentService :: ERROR`,
+      err
+    );
     throw new Error("INTERNAL SERVER ERROR");
   }
 };

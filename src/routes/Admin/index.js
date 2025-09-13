@@ -1,5 +1,5 @@
-import { 
-  adminLoginController, 
+import {
+  adminLoginController,
   departmentsController,
   academicYearDataController,
   companylistController,
@@ -9,7 +9,7 @@ import {
   addStudentController,
   overallCompanyDataController,
   overallCompanyDataUpdateController,
-  deleteStudentController
+  deleteStudentController,
 } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
@@ -21,19 +21,19 @@ export default async function routes(fastify, options) {
     handler: departmentsController,
   });
 
-   fastify.get("/academicyeardata", {
+  fastify.get("/academicyeardata", {
     handler: academicYearDataController,
   });
 
-    fastify.get("/companylist", {
+  fastify.get("/companylist", {
     handler: companylistController,
   });
 
-    fastify.get("/donutgraphdata", {
+  fastify.get("/donutgraphdata", {
     handler: donutGraphDataController,
   });
 
-    fastify.get("/downloadtemplate", {
+  fastify.get("/downloadtemplate", {
     handler: downloadTemplateController,
   });
 
@@ -41,11 +41,11 @@ export default async function routes(fastify, options) {
     handler: registerBulkEmployeeController,
   });
 
-    fastify.post("/addstudent", {
+  fastify.post("/addstudent", {
     handler: addStudentController,
   });
 
-   fastify.get("/overallcompanydata", {
+  fastify.get("/overallcompanydata", {
     handler: overallCompanyDataController,
   });
 
@@ -53,9 +53,7 @@ export default async function routes(fastify, options) {
     handler: overallCompanyDataUpdateController,
   });
 
-    fastify.delete("/deletestudent/:student_id", {
+  fastify.delete("/deletestudent/:student_id", {
     handler: deleteStudentController,
   });
-
-
 }
