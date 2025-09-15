@@ -3,6 +3,7 @@ import {
   studentProfileUpdateService,
   studentDataService,
   allCompanyListForStudentService,
+  studentAppliedService
 } from "../../Service/Student/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -74,6 +75,23 @@ export const allCompanyListForStudentController = async (request, reply) => {
   } catch (error) {
     logger.error(
       "ERROR :: Student :: allCompanyListForStudentController",
+      error
+    );
+    await getStatusCode(error, reply);
+  }
+};
+
+
+
+export const studentAppliedController = async (request, reply) => {
+  try {
+    const {student_id ,company_id}  = request?.body;
+    console.log("student_id",student_id,company_id);
+    const result = await studentAppliedService(student_id,company_id);
+    return result;
+  } catch (error) {
+    logger.error(
+      "ERROR :: Student :: studentappliedController",
       error
     );
     await getStatusCode(error, reply);

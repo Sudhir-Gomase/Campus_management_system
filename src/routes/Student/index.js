@@ -3,6 +3,7 @@ import {
   studentProfileUpdateController,
   studentDataController,
   allCompanyListForStudentController,
+  studentAppliedController
 } from "../../service-layer/Controllers/Student/index.js";
 
 export default async function routes(fastify, options) {
@@ -18,7 +19,11 @@ export default async function routes(fastify, options) {
     handler: studentProfileUpdateController,
   });
 
-  fastify.get("/allcompanylistforstudent/:id", {
+  fastify.get("/allcompanylistforstudent/:id", {  //student_id
     handler: allCompanyListForStudentController,
+  });
+
+  fastify.post("/studentapplied", {  //student_id
+    handler: studentAppliedController,
   });
 }

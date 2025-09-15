@@ -62,6 +62,8 @@ export const studentProfileUpdate = async (updateData) => {
 
 export const allCompanyListForStudent = async (student_id) => {
   try {
+    console.log("student_id",student_id);
+
     const companies = await knex("companies as c")
       .where("c.is_approved", "true") // only approved companies
       .whereNotIn(
@@ -81,3 +83,37 @@ export const allCompanyListForStudent = async (student_id) => {
     throw new Error("INTERNAL SERVER ERROR");
   }
 };
+
+
+
+export const studentApplied = async (student_id, company_id) => {
+  try {
+    // 1. Check if student already applied
+    const existing = await knex("student_companies")
+      .where({ student_id, company_id })
+      .first();
+
+    if (existing) {
+      return "Student already exists";
+    }
+
+    // 2. If not exists, insert new record
+    const placement_status = "applied";
+    const applied_at = new Date();
+
+    const record = {
+      student_id,
+      company_id,
+      placement_status,
+      applied_at,
+    };
+
+    await knex("student_companies").insert(record);
+
+    return "Student applied successfully";
+  } catch (err) {
+    logger.error(`SERVICE :: STUDENT :: studentApplied :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+

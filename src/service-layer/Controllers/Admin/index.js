@@ -218,7 +218,7 @@ export const addStudentController = async (request, reply) => {
 };
 
 export const overallCompanyDataController = async (request, reply) => {
-  try {
+  try { 
     const { is_approved } = request?.query;
     const data = await overallCompanyDataService(is_approved);
     return reply.send(data);

@@ -24,7 +24,10 @@ server.register(multipart);
 
 
 // ✅ Register CORS
-const allowedOrigins = []; // Add allowed frontend URLs if needed
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://localhost:3000"
+]; // Add allowed frontend URLs if needed
 server.register(cors, {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) {

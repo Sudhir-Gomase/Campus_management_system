@@ -21,7 +21,7 @@ export default async function routes(fastify, options) {
     handler: departmentsController,
   });
 
-  fastify.get("/academicyeardata", {
+  fastify.get("/academicyeardata", { 
     handler: academicYearDataController,
   });
 

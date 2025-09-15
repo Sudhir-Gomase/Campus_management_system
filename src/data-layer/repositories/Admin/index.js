@@ -252,13 +252,14 @@ export const addstudent = async (employees) => {
 
 export const overallCompanyData = async (is_approved) => {
   try {
+    console.log("is_approved",is_approved);
     if (is_approved === "true") {
       const students = await knex("companies")
         .select("*")
         .where("is_approved", is_approved);
       return students;
     } else {
-      const students = await knex("companies").select("*");
+      const students = await knex("companies").select("*").where("is_approved", is_approved);;
       return students;
     }
   } catch (err) {
