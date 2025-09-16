@@ -3,7 +3,8 @@ import {
   studentProfileUpdateService,
   studentDataService,
   allCompanyListForStudentService,
-  studentAppliedService
+  studentAppliedService,
+  onGoingProcessService
 } from "../../Service/Student/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -92,6 +93,22 @@ export const studentAppliedController = async (request, reply) => {
   } catch (error) {
     logger.error(
       "ERROR :: Student :: studentappliedController",
+      error
+    );
+    await getStatusCode(error, reply);
+  }
+};
+
+
+
+export const onGoingProcessController = async (request, reply) => {
+  try {
+    const {student_id}  = request?.params;
+    const result = await onGoingProcessService(student_id);
+    return result;
+  } catch (error) {
+    logger.error(
+      "ERROR :: Student :: onGoingProcessController",
       error
     );
     await getStatusCode(error, reply);

@@ -10,6 +10,7 @@ import {
   overallCompanyDataController,
   overallCompanyDataUpdateController,
   deleteStudentController,
+  adminDataUpdateController
 } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
@@ -56,4 +57,10 @@ export default async function routes(fastify, options) {
   fastify.delete("/deletestudent/:student_id", {
     handler: deleteStudentController,
   });
+
+    fastify.post("/admindataupdate/:admin_id", {
+    handler: adminDataUpdateController,
+  });
+
+
 }

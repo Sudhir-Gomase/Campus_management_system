@@ -1,6 +1,7 @@
 import knex from "../../database-connections/campus_db/connection.js";
 import logger from "../../../../src/utils/logger.js";
 import { only } from "node:test";
+import { format } from "path";
 
 export const getUserForStudent = async (email) => {
   try {
@@ -117,3 +118,23 @@ export const studentApplied = async (student_id, company_id) => {
   }
 };
 
+
+
+
+export const onGoingProcess = async (student_id) => {
+  try {
+    const result = await knex("student_companies as sc")
+      .join("companies as c", "sc.company_id", "c.company_id")
+      .select(
+        "sc.company_id",
+        "sc.placement_status",
+        "c.*"
+      )
+      .where("sc.student_id", student_id);
+
+    return result;
+  } catch (err) {
+    logger.error(`SERVICE :: STUDENT :: onGoingProcess :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};

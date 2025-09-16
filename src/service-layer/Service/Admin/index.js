@@ -10,6 +10,7 @@ import {
   overallCompanyData,
   overallCompanyDataUpdate,
   deleteStudent,
+  adminDataUpdate
 } from "../../../data-layer/repositories/Admin/index.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
@@ -230,6 +231,18 @@ export const deleteStudentService = async (student_id) => {
     return data;
   } catch (error) {
     logger.error(`SERVICE :: ADMIN :: deleteStudentService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+
+
+export const adminDataUpdateService = async (data) => {
+  try {
+    const result = await adminDataUpdate(data);
+    return result;
+  } catch (error) {
+    logger.error(`SERVICE :: ADMIN :: adminDataUpdateService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
 };

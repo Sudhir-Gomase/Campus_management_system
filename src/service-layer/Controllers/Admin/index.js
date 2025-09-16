@@ -10,6 +10,7 @@ import {
   overallCompanyDataService,
   overallCompanyDataUpdateService,
   deleteStudentService,
+  adminDataUpdateService
 } from "../../Service/Admin/index.js";
 import fastifyMultipart from "@fastify/multipart";
 import { Readable } from "stream";
@@ -263,6 +264,19 @@ export const deleteStudentController = async (request, reply) => {
     }
   } catch (error) {
     logger.error("ERROR :: ADMIN :: deleteStudentController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+
+
+export const adminDataUpdateController = async (request, reply) => {
+  try {
+    const info   = request?.body;
+    const data = await adminDataUpdateService(info);
+    return data
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: adminDataUpdateController", error);
     await getStatusCode(error, reply);
   }
 };

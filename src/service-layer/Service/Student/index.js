@@ -3,7 +3,8 @@ import {
   studentData,
   studentProfileUpdate,
   allCompanyListForStudent,
-  studentApplied
+  studentApplied,
+  onGoingProcess
 } from "../../../data-layer/repositories/Student/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -103,6 +104,21 @@ export const studentAppliedService = async (student_id,company_id) => {
   } catch (err) {
     logger.error(
       `SERVICE :: STUDENT :: studentAppliedService :: ERROR`,
+      err
+    );
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+
+
+export const onGoingProcessService = async (student_id) => {
+  try {
+    const result = await onGoingProcess(student_id);
+    return result;
+  } catch (err) {
+    logger.error(
+      `SERVICE :: STUDENT :: onGoingProcessService :: ERROR`,
       err
     );
     throw new Error("INTERNAL SERVER ERROR");

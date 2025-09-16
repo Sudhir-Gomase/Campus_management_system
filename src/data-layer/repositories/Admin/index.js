@@ -333,3 +333,30 @@ export const deleteStudent = async (student_id) => {
     throw new Error("Database query failed");
   }
 };
+
+
+export const adminDataUpdate = async (data) => {
+  try {
+   
+   let admin_id =data.adminId 
+   let email =data.email
+   let name=data.name
+   let phone=data.phone
+   let password=data.password
+  password = await bcrypt.hash(password, saltRounds);
+  const udpateData = await knex("admin")
+        .update({
+          "email": email,
+          "name":name,
+          "phone": phone,
+          "password":password
+        })
+      .where("admin_id", admin_id)
+   if(udpateData === 1){
+    return "Admin details updated successfully"
+   }
+  } catch (err) {
+    logger.error(`REPOSITORY :: students :: adminDataUpdate :: `, err);
+    throw new Error("Database query failed");
+  }
+};
