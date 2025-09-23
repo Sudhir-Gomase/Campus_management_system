@@ -63,7 +63,7 @@ export const studentProfileUpdate = async (updateData) => {
 
 export const allCompanyListForStudent = async (student_id) => {
   try {
-    console.log("student_id",student_id);
+    console.log("student_id", student_id);
 
     const companies = await knex("companies as c")
       .where("c.is_approved", "true") // only approved companies
@@ -85,8 +85,6 @@ export const allCompanyListForStudent = async (student_id) => {
   }
 };
 
-
-
 export const studentApplied = async (student_id, company_id) => {
   try {
     // 1. Check if student already applied
@@ -100,6 +98,7 @@ export const studentApplied = async (student_id, company_id) => {
 
     // 2. If not exists, insert new record
     const placement_status = "applied";
+
     const applied_at = new Date();
 
     const record = {
@@ -109,7 +108,7 @@ export const studentApplied = async (student_id, company_id) => {
       applied_at,
     };
 
-    await knex("student_companies").insert(record);
+    const data = await knex("student_companies").insert(record);
 
     return "Student applied successfully";
   } catch (err) {
@@ -118,18 +117,11 @@ export const studentApplied = async (student_id, company_id) => {
   }
 };
 
-
-
-
 export const onGoingProcess = async (student_id) => {
   try {
     const result = await knex("student_companies as sc")
       .join("companies as c", "sc.company_id", "c.company_id")
-      .select(
-        "sc.company_id",
-        "sc.placement_status",
-        "c.*"
-      )
+      .select("sc.company_id", "sc.placement_status", "c.*")
       .where("sc.student_id", student_id);
 
     return result;

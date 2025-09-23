@@ -7,7 +7,7 @@ import fastifyJwt from "@fastify/jwt";
 
 // Routes
 import Admin from "./src/routes/Admin/index.js";
-// import Company from "./src/routes/Company/index.js";
+import Company from "./src/routes/Company/index.js";
 import Student from "./src/routes/Student/index.js";
 
 // Load environment variables
@@ -22,12 +22,8 @@ console.log(">>>>>>>> DB Password:", process.env.DB_PASSWORD);
 // ✅ Register multipart
 server.register(multipart);
 
-
 // ✅ Register CORS
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://localhost:3000"
-]; // Add allowed frontend URLs if needed
+const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"]; // Add allowed frontend URLs if needed
 server.register(cors, {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -65,7 +61,7 @@ server.addHook("onRequest", async (request, reply) => {
   const publicRoutes = ["/adminlogin", "/studentlogin"];
   const path = request.routerPath || request.raw.url;
 
-  if (publicRoutes.some(route => path.startsWith(route))) {
+  if (publicRoutes.some((route) => path.startsWith(route))) {
     return; // Skip JWT verification for public routes
   }
   try {
@@ -78,7 +74,7 @@ server.addHook("onRequest", async (request, reply) => {
 // ✅ Register routes
 server.register(Admin);
 server.register(Student);
-// server.register(Company);
+server.register(Company);
 
 // ✅ Start server
 const options = {

@@ -10,7 +10,7 @@ import {
   overallCompanyDataService,
   overallCompanyDataUpdateService,
   deleteStudentService,
-  adminDataUpdateService
+  adminDataUpdateService,
 } from "../../Service/Admin/index.js";
 import fastifyMultipart from "@fastify/multipart";
 import { Readable } from "stream";
@@ -30,7 +30,10 @@ export const adminLoginController = async (request, reply) => {
     const data = await adminloginService(email, password);
 
     if (data === "user not found" || data === "password not matched") {
-      return reply.code(400).send({ error: "Invalid Credentials." });
+      return reply.status(400).send({
+        success: false,
+        error: "Invalid Credentials.",
+      });
     }
 
     const {
@@ -44,17 +47,23 @@ export const adminLoginController = async (request, reply) => {
     } = data;
 
     if (!token) {
-      return reply.code(500).send({ error: "Token generation failed" });
+      return reply.status(500).send({
+        success: false,
+        error: "Token generation failed",
+      });
     }
 
-    return reply.send({
-      token,
-      adminId,
-      expireIn: expireIN,
-      role,
-      email: userEmail,
-      name,
-      phone,
+    return reply.status(200).send({
+      success: true,
+      data: {
+        token,
+        adminId,
+        expireIn: expireIN,
+        role,
+        email: userEmail,
+        name,
+        phone,
+      },
       message: "Login successful",
     });
   } catch (error) {
@@ -67,9 +76,14 @@ export const departmentsController = async (request, reply) => {
   try {
     const { id } = request.query; // ✅ read query string param
     const data = await departmentsService(id); // pass id to service
-    return reply.send(data);
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Departments retrieved successfully",
+    });
   } catch (error) {
-    logger.error("ERROR :: A :: departmentsController", error);
+    logger.error("ERROR :: ADMIN :: departmentsController", error);
     await getStatusCode(error, reply);
   }
 };
@@ -83,14 +97,26 @@ export const academicYearDataController = async (request, reply) => {
       company_id,
       status
     );
+
     if (typeof data === "string" && data.startsWith("No data")) {
-      reply.code(400).send(data); // or res.status/ h.response depending on framework
-    }
-    if (typeof data === "string" && data.startsWith("No students found")) {
-      reply.code(400).send(data); // or res.status/ h.response depending on framework
+      return reply.status(404).send({
+        success: false,
+        error: data,
+      });
     }
 
-    return reply.send(data);
+    if (typeof data === "string" && data.startsWith("No students found")) {
+      return reply.status(404).send({
+        success: false,
+        error: data,
+      });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Academic year data retrieved successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: academicYearDataController", error);
     await getStatusCode(error, reply);
@@ -101,7 +127,12 @@ export const companylistController = async (request, reply) => {
   try {
     const { id } = request.query;
     const data = await companyListService(id);
-    return reply.send(data);
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Company list retrieved successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: companylistController", error);
     await getStatusCode(error, reply);
@@ -112,7 +143,12 @@ export const donutGraphDataController = async (request, reply) => {
   try {
     const { department_id } = request.query;
     const data = await donutGraphDataService(department_id);
-    return reply.send(data);
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Donut chart data retrieved successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: donutGraphDataController", error);
     await getStatusCode(error, reply);
@@ -195,11 +231,15 @@ export const registerBulkEmployeeController = async (request, reply) => {
     // ✅ call service with full array
     await registerBulkEmployeeService(employees);
 
-    return reply.send({
-      total: results.length,
-      success: successCount,
-      failed: errors.length,
-      errors,
+    return reply.status(201).send({
+      success: true,
+      data: {
+        total: results.length,
+        successCount: successCount,
+        failedCount: errors.length,
+        errors,
+      },
+      message: "Bulk employee registration completed",
     });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: registerBulkEmployeeController", error);
@@ -211,7 +251,12 @@ export const addStudentController = async (request, reply) => {
   try {
     const record = request?.body;
     const data = await addstudentService(record);
-    return reply.send(data);
+
+    return reply.status(201).send({
+      success: true,
+      data: data,
+      message: "Student added successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: addStudentController", error);
     await getStatusCode(error, reply);
@@ -219,10 +264,15 @@ export const addStudentController = async (request, reply) => {
 };
 
 export const overallCompanyDataController = async (request, reply) => {
-  try { 
+  try {
     const { is_approved } = request?.query;
     const data = await overallCompanyDataService(is_approved);
-    return reply.send(data);
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Company data retrieved successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: overallCompanyDataController", error);
     await getStatusCode(error, reply);
@@ -236,20 +286,22 @@ export const overallCompanyDataUpdateController = async (request, reply) => {
       company_id,
       is_approved
     );
+
     if (!result || result.success === false) {
-      return reply.code(404).send({
+      return reply.status(404).send({
         success: false,
-        message: result?.message || "Data not updated",
+        error: result?.message || "Data not updated",
       });
     }
-    return reply.send({
+
+    return reply.status(200).send({
       success: true,
+      data: result.credentials ? { credentials: result.credentials } : null,
       message: result.message,
-      ...(result.credentials ? { credentials: result.credentials } : {}), // only send if created
     });
-  } catch (err) {
+  } catch (error) {
     logger.error("ERROR :: ADMIN :: overallCompanyDataUpdateController", error);
-    await getStatusCode(err, reply);
+    await getStatusCode(error, reply);
   }
 };
 
@@ -257,10 +309,17 @@ export const deleteStudentController = async (request, reply) => {
   try {
     const { student_id } = request?.params;
     const data = await deleteStudentService(student_id);
+
     if (data === 1) {
-      return reply.send("Data is Deleted successfully.");
+      return reply.status(200).send({
+        success: true,
+        message: "Student deleted successfully",
+      });
     } else {
-      return reply.send("Data is not Deleted successfully.");
+      return reply.status(400).send({
+        success: false,
+        error: "Student deletion failed",
+      });
     }
   } catch (error) {
     logger.error("ERROR :: ADMIN :: deleteStudentController", error);
@@ -268,13 +327,16 @@ export const deleteStudentController = async (request, reply) => {
   }
 };
 
-
-
 export const adminDataUpdateController = async (request, reply) => {
   try {
-    const info   = request?.body;
+    const info = request?.body;
     const data = await adminDataUpdateService(info);
-    return data
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Admin data updated successfully",
+    });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: adminDataUpdateController", error);
     await getStatusCode(error, reply);

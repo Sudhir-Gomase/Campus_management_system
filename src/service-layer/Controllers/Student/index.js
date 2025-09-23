@@ -4,7 +4,7 @@ import {
   studentDataService,
   allCompanyListForStudentService,
   studentAppliedService,
-  onGoingProcessService
+  onGoingProcessService,
 } from "../../Service/Student/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -20,23 +20,32 @@ export const studentLoginController = async (request, reply) => {
     console.log("data", data);
 
     if (data === "user not found" || data === "password not matched") {
-      return reply.code(400).send({ error: "Invalid Credentials." });
+      return reply.status(400).send({
+        success: false,
+        error: "Invalid Credentials.",
+      });
     }
 
     const { studentId, token, expireIN, email: userEmail, name, phone } = data;
 
     if (!token) {
-      return reply.code(500).send({ error: "Token generation failed" });
+      return reply.status(500).send({
+        success: false,
+        error: "Token generation failed",
+      });
     }
 
-    return reply.send({
-      token,
-      studentId,
-      expireIn: expireIN,
-      role: "student",
-      email: userEmail,
-      name,
-      phone,
+    return reply.status(200).send({
+      success: true,
+      data: {
+        token,
+        studentId,
+        expireIn: expireIN,
+        role: "student",
+        email: userEmail,
+        name,
+        phone,
+      },
       message: "Login successful",
     });
   } catch (error) {
@@ -50,7 +59,11 @@ export const studentDataController = async (request, reply) => {
     let { id } = request?.params;
     console.log("id", id);
     const result = await studentDataService(id);
-    return result;
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+    });
   } catch (error) {
     logger.error("ERROR :: Student :: studentDataController", error);
     await getStatusCode(error, reply);
@@ -61,9 +74,14 @@ export const studentProfileUpdateController = async (request, reply) => {
   try {
     const data = request?.body;
     const result = await studentProfileUpdateService(data);
-    return result;
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+      message: "Student profile updated successfully",
+    });
   } catch (error) {
-    logger.error("ERROR :: Student :: studentDataController", error);
+    logger.error("ERROR :: Student :: studentProfileUpdateController", error);
     await getStatusCode(error, reply);
   }
 };
@@ -72,7 +90,12 @@ export const allCompanyListForStudentController = async (request, reply) => {
   try {
     const { id } = request?.params;
     const result = await allCompanyListForStudentService(id);
-    return result;
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+      message: "Company list retrieved successfully",
+    });
   } catch (error) {
     logger.error(
       "ERROR :: Student :: allCompanyListForStudentController",
@@ -82,35 +105,35 @@ export const allCompanyListForStudentController = async (request, reply) => {
   }
 };
 
-
-
 export const studentAppliedController = async (request, reply) => {
   try {
-    const {student_id ,company_id}  = request?.body;
-    console.log("student_id",student_id,company_id);
-    const result = await studentAppliedService(student_id,company_id);
-    return result;
+    const { student_id, company_id } = request?.body;
+    console.log("student_id", student_id, company_id);
+    const result = await studentAppliedService(student_id, company_id);
+
+    return reply.status(201).send({
+      success: true,
+      data: result,
+      message: "Application submitted successfully",
+    });
   } catch (error) {
-    logger.error(
-      "ERROR :: Student :: studentappliedController",
-      error
-    );
+    logger.error("ERROR :: Student :: studentAppliedController", error);
     await getStatusCode(error, reply);
   }
 };
 
-
-
 export const onGoingProcessController = async (request, reply) => {
   try {
-    const {student_id}  = request?.params;
+    const { student_id } = request?.params;
     const result = await onGoingProcessService(student_id);
-    return result;
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+      message: "Ongoing processes retrieved successfully",
+    });
   } catch (error) {
-    logger.error(
-      "ERROR :: Student :: onGoingProcessController",
-      error
-    );
+    logger.error("ERROR :: Student :: onGoingProcessController", error);
     await getStatusCode(error, reply);
   }
 };
