@@ -4,6 +4,7 @@ import {
   updateCompanyProfileService,
   getCompanyProfileService,
   getCompanyApplicationsService,
+  updateApplicationStatusService,
 } from "../../Service/Company/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -29,9 +30,37 @@ export const companyLoginController = async (req, reply) => {
   try {
     const data = req.body;
     const result = await companyLoginService(data);
+
+    // Check if login failed
+    if (typeof result === "string") {
+      return reply.status(400).send({
+        success: false,
+        error: result,
+      });
+    }
+
+    // Successful login with JWT
+    const { companyId, token, expireIN, username, name, email } = result;
+
+    if (!token) {
+      return reply.status(500).send({
+        success: false,
+        error: "Token generation failed",
+      });
+    }
+
     return reply.status(200).send({
       success: true,
-      message: result,
+      data: {
+        token,
+        companyId,
+        expireIn: expireIN,
+        username,
+        name,
+        email,
+        role: "company",
+      },
+      message: "Login successful",
     });
   } catch (error) {
     logger.error(
@@ -111,12 +140,44 @@ export const getCompanyApplicationsController = async (req, reply) => {
 
     return reply.status(200).send({
       success: true,
-      data: result,
-      message: "Company applications retrieved successfully"
+      data: result.data,
+      message: result.message,
     });
   } catch (error) {
     logger.error(
       "CONTROLLER :: COMPANY :: getCompanyApplicationsController :: ERROR",
+      error
+    );
+    await getStatusCode(error, reply);
+  }
+};
+
+export const updateApplicationStatusController = async (req, reply) => {
+  try {
+    const { companyId, studentId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return reply.status(400).send({
+        success: false,
+        error: "Status is required",
+      });
+    }
+
+    const result = await updateApplicationStatusService(
+      companyId,
+      studentId,
+      status
+    );
+
+    return reply.status(200).send({
+      success: true,
+      data: result,
+      message: "Application status updated successfully",
+    });
+  } catch (error) {
+    logger.error(
+      "CONTROLLER :: COMPANY :: updateApplicationStatusController :: ERROR",
       error
     );
     await getStatusCode(error, reply);

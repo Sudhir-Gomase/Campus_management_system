@@ -27,12 +27,62 @@ export const getStatusCode = (error, reply) => {
       404,
       "Company not found or no changes made",
     ],
+    "Student ID and Company ID are required": [
+      400,
+      "Student ID and Company ID are required",
+    ],
+    "Company is not approved for placement": [
+      403,
+      "Company is not approved for placement",
+    ],
+    "Student is already placed and cannot apply to other companies": [
+      409,
+      "Student is already placed and cannot apply to other companies",
+    ],
+    "You have already applied to this company": [
+      409,
+      "You have already applied to this company",
+    ],
     "Unauthorized access": [401, "Unauthorized access"],
     "Access denied": [403, "Access denied"],
     "Validation failed": [400, "Validation failed"],
     "Invalid data format": [400, "Invalid data format"],
     "Resource already exists": [409, "Resource already exists"],
     "Permission denied": [403, "Permission denied"],
+    // Notification related errors
+    "Invalid application status": [400, "Invalid application status"],
+    "Custom message is required when message type is 'custom'": [
+      400,
+      "Custom message is required when message type is 'custom'",
+    ],
+    "Custom message cannot exceed 1000 characters": [
+      400,
+      "Custom message cannot exceed 1000 characters",
+    ],
+    "Template message cannot exceed 1000 characters": [
+      400,
+      "Template message cannot exceed 1000 characters",
+    ],
+    "Student IDs must be a non-empty array": [
+      400,
+      "Student IDs must be a non-empty array",
+    ],
+    "Cannot send bulk notifications to more than 100 students at once": [
+      400,
+      "Cannot send bulk notifications to more than 100 students at once",
+    ],
+    "Notification not found or access denied": [
+      404,
+      "Notification not found or access denied",
+    ],
+    "Template not found": [404, "Template not found"],
+    "Bulk notification not found": [404, "Bulk notification not found"],
+    "Notification ID is required": [400, "Notification ID is required"],
+    "Template ID is required": [400, "Template ID is required"],
+    "Bulk notification ID is required": [
+      400,
+      "Bulk notification ID is required",
+    ],
   };
 
   // Database error codes mapping
@@ -64,6 +114,14 @@ export const getStatusCode = (error, reply) => {
   // First check if it's a custom error message
   if (error.message && customErrorMap[error.message]) {
     [status, message] = customErrorMap[error.message];
+  }
+  // Check for eligibility criteria errors
+  else if (
+    error.message &&
+    error.message.includes("Eligibility criteria not met")
+  ) {
+    status = 422;
+    message = error.message;
   }
   // Check for MySQL date errors
   else if (error.message && error.message.includes("Incorrect date value")) {

@@ -4,6 +4,7 @@ import {
   updateCompanyProfileController,
   getCompanyProfileController,
   getCompanyApplicationsController,
+  updateApplicationStatusController,
 } from "../../service-layer/Controllers/Company/index.js";
 
 export default async function routes(fastify, options) {
@@ -27,8 +28,13 @@ export default async function routes(fastify, options) {
     handler: updateCompanyProfileController,
   });
 
-  // Get company applications - shows all students who applied to this company
+  // Get company applications (students who applied)
   fastify.get("/company/:companyId/applications", {
     handler: getCompanyApplicationsController,
+  });
+
+  // Update student application status
+  fastify.put("/company/:companyId/application/:studentId/status", {
+    handler: updateApplicationStatusController,
   });
 }

@@ -11,6 +11,7 @@ import {
   overallCompanyDataUpdateService,
   deleteStudentService,
   adminDataUpdateService,
+  searchStudentService,
 } from "../../Service/Admin/index.js";
 import fastifyMultipart from "@fastify/multipart";
 import { Readable } from "stream";
@@ -339,6 +340,29 @@ export const adminDataUpdateController = async (request, reply) => {
     });
   } catch (error) {
     logger.error("ERROR :: ADMIN :: adminDataUpdateController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const searchStudentController = async (request, reply) => {
+  try {
+    const { query } = request.query; // Can be name or roll number
+    const data = await searchStudentService(query);
+
+    if (!data || data.length === 0) {
+      return reply.status(404).send({
+        success: false,
+        message: "No students found matching the search criteria",
+      });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      data: data,
+      message: "Students retrieved successfully",
+    });
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: searchStudentController", error);
     await getStatusCode(error, reply);
   }
 };

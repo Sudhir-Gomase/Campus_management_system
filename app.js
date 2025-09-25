@@ -9,6 +9,7 @@ import fastifyJwt from "@fastify/jwt";
 import Admin from "./src/routes/Admin/index.js";
 import Company from "./src/routes/Company/index.js";
 import Student from "./src/routes/Student/index.js";
+import Notification from "./src/routes/Notification/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -23,7 +24,11 @@ console.log(">>>>>>>> DB Password:", process.env.DB_PASSWORD);
 server.register(multipart);
 
 // ✅ Register CORS
-const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"]; // Add allowed frontend URLs if needed
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://localhost:3000",
+  "http://localhost:3001",
+]; // Add allowed frontend URLs if needed
 server.register(cors, {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -58,7 +63,12 @@ server.register(fastifyJwt, {
 
 // ✅ JWT Auth Hook (protect all except login)
 server.addHook("onRequest", async (request, reply) => {
-  const publicRoutes = ["/adminlogin", "/studentlogin"];
+  const publicRoutes = [
+    "/adminlogin",
+    "/studentlogin",
+    "/companylogin",
+    "/companyregistration",
+  ];
   const path = request.routerPath || request.raw.url;
 
   if (publicRoutes.some((route) => path.startsWith(route))) {
@@ -75,6 +85,7 @@ server.addHook("onRequest", async (request, reply) => {
 server.register(Admin);
 server.register(Student);
 server.register(Company);
+server.register(Notification);
 
 // ✅ Start server
 const options = {

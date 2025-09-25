@@ -252,14 +252,16 @@ export const addstudent = async (employees) => {
 
 export const overallCompanyData = async (is_approved) => {
   try {
-    console.log("is_approved",is_approved);
+    console.log("is_approved", is_approved);
     if (is_approved === "true") {
       const students = await knex("companies")
         .select("*")
         .where("is_approved", is_approved);
       return students;
     } else {
-      const students = await knex("companies").select("*").where("is_approved", is_approved);;
+      const students = await knex("companies")
+        .select("*")
+        .where("is_approved", is_approved);
       return students;
     }
   } catch (err) {
@@ -334,29 +336,81 @@ export const deleteStudent = async (student_id) => {
   }
 };
 
-
 export const adminDataUpdate = async (data) => {
   try {
-   
-   let admin_id =data.adminId 
-   let email =data.email
-   let name=data.name
-   let phone=data.phone
-   let password=data.password
-  password = await bcrypt.hash(password, saltRounds);
-  const udpateData = await knex("admin")
-        .update({
-          "email": email,
-          "name":name,
-          "phone": phone,
-          "password":password
-        })
-      .where("admin_id", admin_id)
-   if(udpateData === 1){
-    return "Admin details updated successfully"
-   }
+    let admin_id = data.adminId;
+    let email = data.email;
+    let name = data.name;
+    let phone = data.phone;
+    let password = data.password;
+    password = await bcrypt.hash(password, saltRounds);
+    const udpateData = await knex("admin")
+      .update({
+        email: email,
+        name: name,
+        phone: phone,
+        password: password,
+      })
+      .where("admin_id", admin_id);
+    if (udpateData === 1) {
+      return "Admin details updated successfully";
+    }
   } catch (err) {
     logger.error(`REPOSITORY :: students :: adminDataUpdate :: `, err);
+    throw new Error("Database query failed");
+  }
+};
+
+export const searchStudent = async (query) => {
+  try {
+    if (!query) {
+      throw new Error("Search query is required");
+    }
+
+    // Search by name or roll number with placement status
+    const students = await knex("students as s")
+      .select(
+        "s.*",
+        "d.name as department_name",
+        "sc.placement_status",
+        "c.name as company_name",
+        "sc.applied_at"
+      )
+      .leftJoin("departments as d", "s.department_id", "d.department_id")
+      .leftJoin("student_companies as sc", "s.student_id", "sc.student_id")
+      .leftJoin("companies as c", "sc.company_id", "c.company_id")
+      .where(function () {
+        this.where("s.full_name", "like", `%${query}%`).orWhere(
+          "s.roll_no",
+          "like",
+          `%${query}%`
+        );
+      })
+      .orderBy("s.full_name");
+
+    // Group by student to show all applications
+    const groupedStudents = {};
+    students.forEach((student) => {
+      const key = student.student_id;
+      if (!groupedStudents[key]) {
+        groupedStudents[key] = {
+          ...student,
+          applications: [],
+        };
+      }
+
+      if (student.placement_status) {
+        groupedStudents[key].applications.push({
+          company_name: student.company_name,
+          placement_status: student.placement_status,
+          applied_at: student.applied_at,
+        });
+      }
+    });
+
+    return Object.values(groupedStudents);
+  } catch (err) {
+    logger.error(`REPOSITORY :: ADMIN :: searchStudent :: ERROR`, err);
     throw new Error("Database query failed");
   }
 };

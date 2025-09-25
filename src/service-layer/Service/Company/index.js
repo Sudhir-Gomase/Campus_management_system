@@ -1,10 +1,13 @@
 import logger from "../../../utils/logger.js";
+import jwt from "jsonwebtoken";
+import knex from "../../../data-layer/database-connections/campus_db/connection.js";
 import {
   companyRegistration,
   companyLogin,
   updateCompanyData,
   getCompanyById,
   getCompanyApplications,
+  updateApplicationStatus,
 } from "../../../../src/data-layer/repositories/Company/index.js";
 
 export const companyRegistrationService = async (data) => {
@@ -33,8 +36,44 @@ export const companyRegistrationService = async (data) => {
 
 export const companyLoginService = async (data) => {
   try {
-    const result = companyLogin(data); // Assume companyLogin is a function that handles the logic
-    return result;
+    // First verify login credentials
+    const loginResult = await companyLogin(data);
+
+    if (loginResult === "Company login successful") {
+      // Get company details for JWT
+      const company = await knex("companies")
+        .where("username", data.username)
+        .first();
+
+      if (!company) {
+        throw new Error("Company not found");
+      }
+
+      // Generate JWT
+      const userPayload = {
+        companyId: company.company_id,
+        username: company.username,
+        email: company.contact_email,
+        role: "company",
+      };
+
+      const secretBuffer = Buffer.from(
+        process.env.JWT_SECRET_KEY || "secret-key"
+      );
+      const token = jwt.sign(userPayload, secretBuffer, { expiresIn: "24h" });
+
+      return {
+        companyId: company.company_id,
+        username: company.username,
+        name: company.name,
+        email: company.contact_email,
+        role: "company",
+        token,
+        expireIN: "24h",
+      };
+    }
+
+    return loginResult;
   } catch (error) {
     logger.error("SERVICE :: COMPANY :: companyLoginService :: ERROR", error);
     throw error;
@@ -160,26 +199,44 @@ export const getCompanyApplicationsService = async (companyId) => {
     // Validate that company exists
     await getCompanyById(companyId);
 
-    // Get all applications for this company
-    const applications = await getCompanyApplications(companyId);
-
-    // Group applications by status for better organization
-    const applicationStats = {
-      total: applications.length,
-      applied: applications.filter(app => app.placement_status === 'applied').length,
-      shortlisted: applications.filter(app => app.placement_status === 'shortlisted').length,
-      interviewed: applications.filter(app => app.placement_status === 'interviewed').length,
-      selected: applications.filter(app => app.placement_status === 'selected').length,
-      rejected: applications.filter(app => app.placement_status === 'rejected').length,
-    };
+    const result = await getCompanyApplications(companyId);
 
     return {
-      applications,
-      statistics: applicationStats
+      message: "Company applications retrieved successfully",
+      data: result,
     };
   } catch (error) {
     logger.error(
       "SERVICE :: COMPANY :: getCompanyApplicationsService :: ERROR",
+      error
+    );
+    throw error;
+  }
+};
+
+export const updateApplicationStatusService = async (
+  companyId,
+  studentId,
+  status
+) => {
+  try {
+    const validStatuses = [
+      "applied",
+      "shortlisted",
+      "interviewed",
+      "selected",
+      "rejected",
+    ];
+
+    if (!validStatuses.includes(status)) {
+      throw new Error("Invalid status provided");
+    }
+
+    const result = await updateApplicationStatus(companyId, studentId, status);
+    return result;
+  } catch (error) {
+    logger.error(
+      "SERVICE :: COMPANY :: updateApplicationStatusService :: ERROR",
       error
     );
     throw error;

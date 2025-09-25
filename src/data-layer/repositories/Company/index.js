@@ -40,7 +40,7 @@ export const companyLogin = async (data) => {
       throw new Error("Admin not approved yet");
     }
     const result = await knex("companies")
-      .where("usernam`e", data.username)
+      .where("username", data.username)
       .andWhere("password", data.password)
       .first();
 
@@ -101,54 +101,105 @@ export const getCompanyById = async (companyId) => {
 
 export const getCompanyApplications = async (companyId) => {
   try {
-    const applications = await knex("student_companies")
-      .join("students", "student_companies.student_id", "students.student_id")
-      .join(
-        "departments",
-        "students.department_id",
-        "departments.department_id"
-      )
-      .where("student_companies.company_id", companyId)
+    // Get all students who applied to this company with their details
+    const applications = await knex("student_companies as sc")
+      .join("students as s", "sc.student_id", "s.student_id")
+      .join("departments as d", "s.department_id", "d.department_id")
+      .where("sc.company_id", companyId)
       .select(
-        "student_companies.id as application_id",
-        "student_companies.placement_status",
-        "student_companies.applied_at",
-        "students.student_id",
-        "students.full_name",
-        "students.email",
-        "students.phone",
-        "students.roll_no",
-        "students.marks_10th",
-        "students.marks_12th",
-        "students.marks_ug",
-        "students.marks_pg",
-        "students.expected_ctc",
-        "students.gender",
-        "students.dob",
-        "students.ug_branch",
-        "students.ug_college",
-        "students.pg_branch",
-        "students.pg_college",
-        "students.backlogs",
-        "students.gap_years",
-        "students.technical_skills",
-        "students.soft_skills",
-        "students.certifications",
-        "students.projects",
-        "students.preferred_job_roles",
-        "students.preferred_locations",
-        "students.resume_url",
-        "students.is_placed",
-        "students.ctc",
-        "departments.name as department_name",
-        "departments.code as department_code"
+        "sc.student_id",
+        "sc.company_id",
+        "sc.placement_status",
+        "sc.applied_at",
+        "s.full_name",
+        "s.email",
+        "s.phone",
+        "s.roll_no",
+        "s.marks_10th",
+        "s.marks_12th",
+        "s.marks_ug",
+        "s.marks_pg",
+        "s.backlogs",
+        "s.gap_years",
+        "s.resume_url",
+        "d.name as department_name",
+        "d.code as department_code"
       )
-      .orderBy("student_companies.applied_at", "desc");
+      .orderBy("sc.applied_at", "desc");
 
-    return applications;
+    // Get application statistics
+    const stats = await knex("student_companies")
+      .where("company_id", companyId)
+      .select("placement_status")
+      .count("student_id as count")
+      .groupBy("placement_status");
+
+    const statistics = {
+      total: applications.length,
+      applied: 0,
+      shortlisted: 0,
+      interviewed: 0,
+      selected: 0,
+      rejected: 0,
+      on_hold: 0,
+    };
+
+    stats.forEach((stat) => {
+      if (statistics.hasOwnProperty(stat.placement_status)) {
+        statistics[stat.placement_status] = stat.count;
+      }
+    });
+
+    return {
+      applications,
+      statistics,
+    };
   } catch (error) {
     logger.error(
       "REPOSITORY :: COMPANY :: getCompanyApplications :: ERROR",
+      error
+    );
+    throw error;
+  }
+};
+
+export const updateApplicationStatus = async (companyId, studentId, status) => {
+  try {
+    // Check if the application exists
+    const existingApplication = await knex("student_companies")
+      .where("company_id", companyId)
+      .andWhere("student_id", studentId)
+      .first();
+
+    if (!existingApplication) {
+      throw new Error("Application not found");
+    }
+
+    // Update the status
+    const result = await knex("student_companies")
+      .where("company_id", companyId)
+      .andWhere("student_id", studentId)
+      .update({
+        placement_status: status,
+        updated_at: new Date(),
+      });
+
+    if (result === 0) {
+      throw new Error("Failed to update application status");
+    }
+
+    // Get updated application details
+    const updatedApplication = await knex("student_companies as sc")
+      .join("students as s", "sc.student_id", "s.student_id")
+      .where("sc.company_id", companyId)
+      .andWhere("sc.student_id", studentId)
+      .select("sc.*", "s.full_name", "s.email", "s.roll_no")
+      .first();
+
+    return updatedApplication;
+  } catch (error) {
+    logger.error(
+      "REPOSITORY :: COMPANY :: updateApplicationStatus :: ERROR",
       error
     );
     throw error;

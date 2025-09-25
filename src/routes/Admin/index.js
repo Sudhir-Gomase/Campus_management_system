@@ -10,7 +10,8 @@ import {
   overallCompanyDataController,
   overallCompanyDataUpdateController,
   deleteStudentController,
-  adminDataUpdateController
+  adminDataUpdateController,
+  searchStudentController,
 } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
@@ -22,7 +23,7 @@ export default async function routes(fastify, options) {
     handler: departmentsController,
   });
 
-  fastify.get("/academicyeardata", { 
+  fastify.get("/academicyeardata", {
     handler: academicYearDataController,
   });
 
@@ -58,9 +59,12 @@ export default async function routes(fastify, options) {
     handler: deleteStudentController,
   });
 
-    fastify.post("/admindataupdate/:admin_id", {
+  fastify.post("/admindataupdate/:admin_id", {
     handler: adminDataUpdateController,
   });
 
-
+  // Search student by name or roll number
+  fastify.get("/searchstudent", {
+    handler: searchStudentController,
+  });
 }
