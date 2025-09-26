@@ -60,6 +60,7 @@ export const companyLoginService = async (data) => {
       const secretBuffer = Buffer.from(
         process.env.JWT_SECRET_KEY || "secret-key"
       );
+
       const token = jwt.sign(userPayload, secretBuffer, { expiresIn: "24h" });
 
       return {
@@ -190,7 +191,7 @@ export const getCompanyProfileService = async (companyId) => {
   }
 };
 
-export const getCompanyApplicationsService = async (companyId) => {
+export const getCompanyApplicationsService = async (companyId, status) => {
   try {
     if (!companyId) {
       throw new Error("Company ID is required");
@@ -199,7 +200,8 @@ export const getCompanyApplicationsService = async (companyId) => {
     // Validate that company exists
     await getCompanyById(companyId);
 
-    const result = await getCompanyApplications(companyId);
+    // Accept status param
+    const result = await getCompanyApplications(companyId, status);
 
     return {
       message: "Company applications retrieved successfully",

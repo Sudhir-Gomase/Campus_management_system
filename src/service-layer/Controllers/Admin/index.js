@@ -252,7 +252,6 @@ export const addStudentController = async (request, reply) => {
   try {
     const record = request?.body;
     const data = await addstudentService(record);
-
     return reply.status(201).send({
       success: true,
       data: data,

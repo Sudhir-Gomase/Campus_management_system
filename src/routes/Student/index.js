@@ -4,7 +4,7 @@ import {
   studentDataController,
   allCompanyListForStudentController,
   studentAppliedController,
-  onGoingProcessController
+  onGoingProcessController,
 } from "../../service-layer/Controllers/Student/index.js";
 
 export default async function routes(fastify, options) {
@@ -20,17 +20,17 @@ export default async function routes(fastify, options) {
     handler: studentProfileUpdateController,
   });
 
-  fastify.get("/allcompanylistforstudent/:id", {  //student_id
+  fastify.get("/allcompanylistforstudent/:id", {
+    //student_id
     handler: allCompanyListForStudentController,
   });
 
-  fastify.post("/studentapplied", {  
+  fastify.post("/studentapplied", {
     handler: studentAppliedController,
   });
 
-   fastify.get("/ongoingprocess/:student_id", {  //student_id
+  fastify.get("/ongoingprocess/:student_id", {
+    //student_id
     handler: onGoingProcessController,
   });
-
 }
-

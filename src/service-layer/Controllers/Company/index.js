@@ -128,6 +128,7 @@ export const getCompanyProfileController = async (req, reply) => {
 export const getCompanyApplicationsController = async (req, reply) => {
   try {
     const companyId = req.params.companyId;
+    const status = req.query.status;
 
     if (!companyId) {
       return reply.status(400).send({
@@ -136,7 +137,7 @@ export const getCompanyApplicationsController = async (req, reply) => {
       });
     }
 
-    const result = await getCompanyApplicationsService(companyId);
+    const result = await getCompanyApplicationsService(companyId, status);
 
     return reply.status(200).send({
       success: true,

@@ -3,6 +3,7 @@ import logger from "../../../../src/utils/logger.js";
 import { only } from "node:test";
 import { format } from "path";
 import { exists } from "fs";
+import bcrypt from "bcrypt";
 
 export const companyRegistration = async (data) => {
   try {
@@ -39,12 +40,9 @@ export const companyLogin = async (data) => {
     if (!exists) {
       throw new Error("Admin not approved yet");
     }
-    const result = await knex("companies")
-      .where("username", data.username)
-      .andWhere("password", data.password)
-      .first();
-
-    if (!result) {
+    // Compare password using bcrypt
+    const passwordsMatch = await bcrypt.compare(data.password, exists.password);
+    if (!passwordsMatch) {
       throw new Error("Invalid username or password");
     }
     return "Company login successful";
@@ -99,13 +97,18 @@ export const getCompanyById = async (companyId) => {
   }
 };
 
-export const getCompanyApplications = async (companyId) => {
+export const getCompanyApplications = async (companyId, status) => {
   try {
-    // Get all students who applied to this company with their details
-    const applications = await knex("student_companies as sc")
+    let query = knex("student_companies as sc")
       .join("students as s", "sc.student_id", "s.student_id")
       .join("departments as d", "s.department_id", "d.department_id")
-      .where("sc.company_id", companyId)
+      .where("sc.company_id", companyId);
+
+    if (status) {
+      query = query.andWhere("sc.placement_status", status);
+    }
+
+    const applications = await query
       .select(
         "sc.student_id",
         "sc.company_id",
@@ -181,7 +184,6 @@ export const updateApplicationStatus = async (companyId, studentId, status) => {
       .andWhere("student_id", studentId)
       .update({
         placement_status: status,
-        updated_at: new Date(),
       });
 
     if (result === 0) {
