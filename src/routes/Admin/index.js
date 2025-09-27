@@ -12,6 +12,7 @@ import {
   deleteStudentController,
   adminDataUpdateController,
   searchStudentController,
+  adminChangePasswordController,
 } from "../../service-layer/Controllers/Admin/index.js";
 
 export default async function routes(fastify, options) {
@@ -66,5 +67,10 @@ export default async function routes(fastify, options) {
   // Search student by name or roll number
   fastify.get("/searchstudent", {
     handler: searchStudentController,
+  });
+
+  // Change admin password
+  fastify.put("/admin/changepassword", {
+    handler: adminChangePasswordController,
   });
 }

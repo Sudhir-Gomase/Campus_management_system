@@ -55,10 +55,10 @@ export const companyLogin = async (data) => {
 export const updateCompanyData = async (companyId, updateData) => {
   try {
     // Remove is_approved field if present to prevent unauthorized updates
-    const { is_approved, ...sanitizedData } = updateData;
+    const { is_approved, password, ...sanitizedData } = updateData;
 
-    // Add updated_at timestamp
-    sanitizedData.updated_at = new Date();
+    // // Add updated_at timestamp
+    // sanitizedData.updated_at = new Date();
 
     const result = await knex("companies")
       .where("company_id", companyId)
@@ -205,5 +205,20 @@ export const updateApplicationStatus = async (companyId, studentId, status) => {
       error
     );
     throw error;
+  }
+};
+
+export const changeCompanyPassword = async (companyId, hashedNewPassword) => {
+  try {
+    const result = await knex("companies")
+      .where("company_id", companyId)
+      .update({
+        password: hashedNewPassword
+      });
+
+    return result === 1; // Return true if exactly 1 row was updated
+  } catch (error) {
+    logger.error("REPOSITORY :: COMPANY :: changeCompanyPassword :: ERROR", error);
+    throw new Error("Database query failed");
   }
 };

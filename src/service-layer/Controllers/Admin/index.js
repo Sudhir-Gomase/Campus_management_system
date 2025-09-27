@@ -12,6 +12,7 @@ import {
   deleteStudentService,
   adminDataUpdateService,
   searchStudentService,
+  adminChangePasswordService,
 } from "../../Service/Admin/index.js";
 import fastifyMultipart from "@fastify/multipart";
 import { Readable } from "stream";
@@ -365,3 +366,50 @@ export const searchStudentController = async (request, reply) => {
     await getStatusCode(error, reply);
   }
 };
+
+export const adminChangePasswordController = async (request, reply) => {
+  try {
+    const { adminId, currentPassword, newPassword } = request.body;
+
+    // Validate required fields
+    if (!adminId || !currentPassword || !newPassword) {
+      return reply.status(400).send({
+        success: false,
+        error: "Admin ID, current password, and new password are required",
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 8) {
+      return reply.status(400).send({
+        success: false,
+        error: "New password must be at least 8 characters long",
+      });
+    }
+
+    const result = await adminChangePasswordService(adminId, currentPassword, newPassword);
+
+    if (result === "Invalid current password") {
+      return reply.status(400).send({
+        success: false,
+        error: "Current password is incorrect",
+      });
+    }
+
+    if (result === "Admin not found") {
+      return reply.status(404).send({
+        success: false,
+        error: "Admin not found",
+      });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    logger.error("ERROR :: ADMIN :: adminChangePasswordController", error);
+    await getStatusCode(error, reply);
+  }
+};
+

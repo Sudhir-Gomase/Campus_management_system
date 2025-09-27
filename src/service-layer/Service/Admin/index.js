@@ -12,12 +12,14 @@ import {
   deleteStudent,
   adminDataUpdate,
   searchStudent,
+  changeAdminPassword,
 } from "../../../data-layer/repositories/Admin/index.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "../../../utils/logger.js";
 import { createObjectCsvWriter } from "csv-writer";
+import knex from "../../../data-layer/database-connections/campus_db/connection.js";
 
 export const adminloginService = async (email, password) => {
   try {
@@ -255,3 +257,37 @@ export const searchStudentService = async (query) => {
     throw new Error("INTERNAL SERVER ERROR");
   }
 };
+
+export const adminChangePasswordService = async (adminId, currentPassword, newPassword) => {
+  try {
+    // Get admin by ID
+    const admin = await knex("admin").where("admin_id", adminId).first();
+    
+    if (!admin) {
+      return "Admin not found";
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, admin.password);
+    if (!isCurrentPasswordValid) {
+      return "Invalid current password";
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password in database
+    const result = await changeAdminPassword(adminId, hashedNewPassword);
+    
+    if (result) {
+      return "Password changed successfully";
+    } else {
+      throw new Error("Failed to update password");
+    }
+  } catch (error) {
+    logger.error(`SERVICE :: ADMIN :: adminChangePasswordService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+

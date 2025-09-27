@@ -342,14 +342,11 @@ export const adminDataUpdate = async (data) => {
     let email = data.email;
     let name = data.name;
     let phone = data.phone;
-    let password = data.password;
-    password = await bcrypt.hash(password, saltRounds);
     const udpateData = await knex("admin")
       .update({
         email: email,
         name: name,
         phone: phone,
-        password: password,
       })
       .where("admin_id", admin_id);
     if (udpateData === 1) {
@@ -411,6 +408,21 @@ export const searchStudent = async (query) => {
     return Object.values(groupedStudents);
   } catch (err) {
     logger.error(`REPOSITORY :: ADMIN :: searchStudent :: ERROR`, err);
+    throw new Error("Database query failed");
+  }
+};
+
+export const changeAdminPassword = async (adminId, hashedNewPassword) => {
+  try {
+    const result = await knex("admin")
+      .where("admin_id", adminId)
+      .update({
+        password: hashedNewPassword,
+      });
+
+    return result === 1; // Return true if exactly 1 row was updated
+  } catch (err) {
+    logger.error(`REPOSITORY :: ADMIN :: changeAdminPassword :: ERROR`, err);
     throw new Error("Database query failed");
   }
 };

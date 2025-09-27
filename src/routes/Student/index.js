@@ -5,6 +5,7 @@ import {
   allCompanyListForStudentController,
   studentAppliedController,
   onGoingProcessController,
+  studentChangePasswordController,
 } from "../../service-layer/Controllers/Student/index.js";
 
 export default async function routes(fastify, options) {
@@ -32,5 +33,10 @@ export default async function routes(fastify, options) {
   fastify.get("/ongoingprocess/:student_id", {
     //student_id
     handler: onGoingProcessController,
+  });
+
+  // Change student password
+  fastify.put("/student/changepassword", {
+    handler: studentChangePasswordController,
   });
 }

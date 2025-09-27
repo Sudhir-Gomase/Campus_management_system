@@ -5,6 +5,7 @@ import {
   getCompanyProfileService,
   getCompanyApplicationsService,
   updateApplicationStatusService,
+  companyChangePasswordService,
 } from "../../Service/Company/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -181,6 +182,52 @@ export const updateApplicationStatusController = async (req, reply) => {
       "CONTROLLER :: COMPANY :: updateApplicationStatusController :: ERROR",
       error
     );
+    await getStatusCode(error, reply);
+  }
+};
+
+export const companyChangePasswordController = async (req, reply) => {
+  try {
+    const { companyId, currentPassword, newPassword } = req.body;
+
+    // Validate required fields
+    if (!companyId || !currentPassword || !newPassword) {
+      return reply.status(400).send({
+        success: false,
+        error: "Company ID, current password, and new password are required",
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 8) {
+      return reply.status(400).send({
+        success: false,
+        error: "New password must be at least 8 characters long",
+      });
+    }
+
+    const result = await companyChangePasswordService(companyId, currentPassword, newPassword);
+
+    if (result === "Invalid current password") {
+      return reply.status(400).send({
+        success: false,
+        error: "Current password is incorrect",
+      });
+    }
+
+    if (result === "Company not found") {
+      return reply.status(404).send({
+        success: false,
+        error: "Company not found",
+      });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    logger.error("ERROR :: COMPANY :: companyChangePasswordController", error);
     await getStatusCode(error, reply);
   }
 };

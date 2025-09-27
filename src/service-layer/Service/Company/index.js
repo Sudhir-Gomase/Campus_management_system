@@ -1,5 +1,6 @@
 import logger from "../../../utils/logger.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import knex from "../../../data-layer/database-connections/campus_db/connection.js";
 import {
   companyRegistration,
@@ -8,6 +9,7 @@ import {
   getCompanyById,
   getCompanyApplications,
   updateApplicationStatus,
+  changeCompanyPassword,
 } from "../../../../src/data-layer/repositories/Company/index.js";
 
 export const companyRegistrationService = async (data) => {
@@ -249,4 +251,37 @@ export const updateApplicationStatusService = async (
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+};
+
+export const companyChangePasswordService = async (companyId, currentPassword, newPassword) => {
+  try {
+    // Get company by ID
+    const company = await knex("companies").where("company_id", companyId).first();
+    
+    if (!company) {
+      return "Company not found";
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, company.password);
+    if (!isCurrentPasswordValid) {
+      return "Invalid current password";
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password in database
+    const result = await changeCompanyPassword(companyId, hashedNewPassword);
+    
+    if (result) {
+      return "Password changed successfully";
+    } else {
+      throw new Error("Failed to update password");
+    }
+  } catch (error) {
+    logger.error(`SERVICE :: COMPANY :: companyChangePasswordService :: ERROR`, error);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
 };

@@ -5,6 +5,7 @@ import {
   allCompanyListForStudent,
   studentApplied,
   onGoingProcess,
+  changeStudentPassword,
 } from "../../../data-layer/repositories/Student/index.js";
 import { getCompanyById } from "../../../data-layer/repositories/Company/index.js";
 import knex from "../../../data-layer/database-connections/campus_db/connection.js";
@@ -261,6 +262,39 @@ export const onGoingProcessService = async (student_id) => {
     return result;
   } catch (err) {
     logger.error(`SERVICE :: STUDENT :: onGoingProcessService :: ERROR`, err);
+    throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const studentChangePasswordService = async (studentId, currentPassword, newPassword) => {
+  try {
+    // Get student by ID
+    const student = await knex("students").where("student_id", studentId).first();
+    
+    if (!student) {
+      return "Student not found";
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, student.password);
+    if (!isCurrentPasswordValid) {
+      return "Invalid current password";
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password in database
+    const result = await changeStudentPassword(studentId, hashedNewPassword);
+    
+    if (result) {
+      return "Password changed successfully";
+    } else {
+      throw new Error("Failed to update password");
+    }
+  } catch (error) {
+    logger.error(`SERVICE :: STUDENT :: studentChangePasswordService :: ERROR`, error);
     throw new Error("INTERNAL SERVER ERROR");
   }
 };

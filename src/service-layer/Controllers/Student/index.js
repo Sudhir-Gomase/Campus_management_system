@@ -5,6 +5,7 @@ import {
   allCompanyListForStudentService,
   studentAppliedService,
   onGoingProcessService,
+  studentChangePasswordService,
 } from "../../Service/Student/index.js";
 import { getStatusCode } from "../../../utils/getStatusCode.js";
 import logger from "../../../utils/logger.js";
@@ -74,6 +75,12 @@ export const studentProfileUpdateController = async (request, reply) => {
   try {
     const data = request?.body;
     const result = await studentProfileUpdateService(data);
+    if(result==="Student not found"){
+     return reply.status(200).send({
+      success: false,
+      message: "Student not found",
+    });
+    }
 
     return reply.status(200).send({
       success: true,
@@ -134,6 +141,52 @@ export const onGoingProcessController = async (request, reply) => {
     });
   } catch (error) {
     logger.error("ERROR :: Student :: onGoingProcessController", error);
+    await getStatusCode(error, reply);
+  }
+};
+
+export const studentChangePasswordController = async (request, reply) => {
+  try {
+    const { studentId, currentPassword, newPassword } = request.body;
+
+    // Validate required fields
+    if (!studentId || !currentPassword || !newPassword) {
+      return reply.status(400).send({
+        success: false,
+        error: "Student ID, current password, and new password are required",
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 8) {
+      return reply.status(400).send({
+        success: false,
+        error: "New password must be at least 8 characters long",
+      });
+    }
+
+    const result = await studentChangePasswordService(studentId, currentPassword, newPassword);
+
+    if (result === "Invalid current password") {
+      return reply.status(400).send({
+        success: false,
+        error: "Current password is incorrect",
+      });
+    }
+
+    if (result === "Student not found") {
+      return reply.status(404).send({
+        success: false,
+        error: "Student not found",
+      });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    logger.error("ERROR :: STUDENT :: studentChangePasswordController", error);
     await getStatusCode(error, reply);
   }
 };

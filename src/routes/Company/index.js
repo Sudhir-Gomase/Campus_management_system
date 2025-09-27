@@ -5,6 +5,7 @@ import {
   getCompanyProfileController,
   getCompanyApplicationsController,
   updateApplicationStatusController,
+  companyChangePasswordController,
 } from "../../service-layer/Controllers/Company/index.js";
 
 export default async function routes(fastify, options) {
@@ -36,5 +37,10 @@ export default async function routes(fastify, options) {
   // Update student application status
   fastify.put("/company/:companyId/application/:studentId/status", {
     handler: updateApplicationStatusController,
+  });
+
+  // Change company password
+  fastify.put("/company/changepassword", {
+    handler: companyChangePasswordController,
   });
 }

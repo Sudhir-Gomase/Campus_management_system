@@ -2,6 +2,9 @@ import knex from "../../database-connections/campus_db/connection.js";
 import logger from "../../../../src/utils/logger.js";
 import { only } from "node:test";
 import { format } from "path";
+import bcrypt from "bcrypt";
+import securePassword from "secure-random-password";
+const saltRounds = 10;
 
 export const getUserForStudent = async (email) => {
   try {
@@ -50,7 +53,15 @@ export const studentData = async (id) => {
 export const studentProfileUpdate = async (updateData) => {
   try {
     let id = updateData?.student_id;
-    await knex("students").where("student_id", id).update(updateData);
+    
+    // Remove password field to prevent unauthorized password updates
+    const { password, ...sanitizedData } = updateData;
+    
+    let exist = await knex("students").where("student_id", id).first();
+    if (!exist) {
+      throw new Error("Student not found");
+    }
+    await knex("students").where("student_id", id).update(sanitizedData);
     const updatedStudent = await knex("students")
       .where("student_id", id)
       .first();
@@ -128,5 +139,20 @@ export const onGoingProcess = async (student_id) => {
   } catch (err) {
     logger.error(`SERVICE :: STUDENT :: onGoingProcess :: ERROR`, err);
     throw new Error("INTERNAL SERVER ERROR");
+  }
+};
+
+export const changeStudentPassword = async (studentId, hashedNewPassword) => {
+  try {
+    const result = await knex("students")
+      .where("student_id", studentId)
+      .update({
+        password: hashedNewPassword,
+      });
+
+    return result === 1; // Return true if exactly 1 row was updated
+  } catch (err) {
+    logger.error(`REPOSITORY :: STUDENT :: changeStudentPassword :: ERROR`, err);
+    throw new Error("Database query failed");
   }
 };
