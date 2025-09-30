@@ -122,19 +122,10 @@ export const studentAppliedService = async (student_id, company_id) => {
       throw new Error("Company is not approved for placement");
     }
 
-    // Perform eligibility validations
-    const validationErrors = [];
-
-    // 1. Check minimum qualification
-    if (company.min_qualification) {
-      // This would need custom logic based on your qualification mapping
-      // For now, we'll assume basic validation
-    }
-
     // 2. Check 10th marks
     if (company.min_marks_10th && student.marks_10th) {
       if (parseFloat(student.marks_10th) < parseFloat(company.min_marks_10th)) {
-        validationErrors.push(
+        throw new Error(
           `10th marks requirement not met. Required: ${company.min_marks_10th}%, Student has: ${student.marks_10th}%`
         );
       }
@@ -143,7 +134,7 @@ export const studentAppliedService = async (student_id, company_id) => {
     // 3. Check 12th marks
     if (company.min_marks_12th && student.marks_12th) {
       if (parseFloat(student.marks_12th) < parseFloat(company.min_marks_12th)) {
-        validationErrors.push(
+        throw new Error(
           `12th marks requirement not met. Required: ${company.min_marks_12th}%, Student has: ${student.marks_12th}%`
         );
       }
@@ -152,7 +143,7 @@ export const studentAppliedService = async (student_id, company_id) => {
     // 4. Check UG marks
     if (company.min_marks_ug && student.marks_ug) {
       if (parseFloat(student.marks_ug) < parseFloat(company.min_marks_ug)) {
-        validationErrors.push(
+        throw new Error(
           `UG marks requirement not met. Required: ${company.min_marks_ug}%, Student has: ${student.marks_ug}%`
         );
       }
@@ -161,7 +152,7 @@ export const studentAppliedService = async (student_id, company_id) => {
     // 5. Check PG marks (if applicable)
     if (company.min_marks_pg && student.marks_pg) {
       if (parseFloat(student.marks_pg) < parseFloat(company.min_marks_pg)) {
-        validationErrors.push(
+        throw new Error(
           `PG marks requirement not met. Required: ${company.min_marks_pg}%, Student has: ${student.marks_pg}%`
         );
       }
@@ -172,7 +163,7 @@ export const studentAppliedService = async (student_id, company_id) => {
       company.max_backlogs_allowed !== null &&
       student.backlogs > company.max_backlogs_allowed
     ) {
-      validationErrors.push(
+      throw new Error(
         `Too many backlogs. Maximum allowed: ${company.max_backlogs_allowed}, Student has: ${student.backlogs}`
       );
     }
@@ -182,7 +173,7 @@ export const studentAppliedService = async (student_id, company_id) => {
       company.gap_years_allowed !== null &&
       student.gap_years > company.gap_years_allowed
     ) {
-      validationErrors.push(
+      throw new Error(
         `Too many gap years. Maximum allowed: ${company.gap_years_allowed}, Student has: ${student.gap_years}`
       );
     }
@@ -199,13 +190,15 @@ export const studentAppliedService = async (student_id, company_id) => {
     const missingFields = [];
 
     requiredStudentFields.forEach((field) => {
-      if (!student[field]) {
+      // console.log("student", student);
+      // console.log("student[field]", student.studentData[field]);
+      if (!student.studentData[field]) {
         missingFields.push(field);
       }
     });
 
     if (missingFields.length > 0) {
-      validationErrors.push(
+      throw new Error(
         `Please complete your profile. Missing fields: ${missingFields.join(
           ", "
         )}`
@@ -214,14 +207,7 @@ export const studentAppliedService = async (student_id, company_id) => {
 
     // 9. Check if resume is uploaded
     if (!student.resume_url) {
-      validationErrors.push("Please upload your resume before applying");
-    }
-
-    // If there are validation errors, throw them
-    if (validationErrors.length > 0) {
-      throw new Error(
-        `Eligibility criteria not met:\n${validationErrors.join("\n")}`
-      );
+      throw new Error("Please upload your resume before applying");
     }
 
     // Check if already applied
@@ -266,17 +252,26 @@ export const onGoingProcessService = async (student_id) => {
   }
 };
 
-export const studentChangePasswordService = async (studentId, currentPassword, newPassword) => {
+export const studentChangePasswordService = async (
+  studentId,
+  currentPassword,
+  newPassword
+) => {
   try {
     // Get student by ID
-    const student = await knex("students").where("student_id", studentId).first();
-    
+    const student = await knex("students")
+      .where("student_id", studentId)
+      .first();
+
     if (!student) {
       return "Student not found";
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, student.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      student.password
+    );
     if (!isCurrentPasswordValid) {
       return "Invalid current password";
     }
@@ -287,14 +282,17 @@ export const studentChangePasswordService = async (studentId, currentPassword, n
 
     // Update password in database
     const result = await changeStudentPassword(studentId, hashedNewPassword);
-    
+
     if (result) {
       return "Password changed successfully";
     } else {
       throw new Error("Failed to update password");
     }
   } catch (error) {
-    logger.error(`SERVICE :: STUDENT :: studentChangePasswordService :: ERROR`, error);
+    logger.error(
+      `SERVICE :: STUDENT :: studentChangePasswordService :: ERROR`,
+      error
+    );
     throw new Error("INTERNAL SERVER ERROR");
   }
 };
